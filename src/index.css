@@ -1,0 +1,21 @@
+@import "tailwindcss";
+@import 'remixicon/fonts/remixicon.css';
+
+:root {
+    --font-primary: 'DM Sans', sans-serif;
+    --font-secondary: 'Raleway', sans-serif;
+  }
+  
+  body {
+    font-family: var(--font-primary);
+  }
+  
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-item {
+  animation: fadeIn 0.3s ease-out;
+}
+  
