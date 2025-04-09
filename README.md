@@ -1,33 +1,12 @@
-# 🧠 BrainDump
+# React + Vite
 
-Welcome to **BrainDump**, a personal productivity and self-tracking web app made with **React**.  
-This is my first personal project built using `Vite`, and it's the beginning of my journey into React development.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## 📌 Features (Planned / Work in Progress)
+Currently, two official plugins are available:
 
-- ✅ Daily thoughts journaling
-- ✅ Todo & task manager
-- ✅ Notes & brain-dump section
-- ✅ Habit tracker
-- ✅ Mood tracker with emojis
-- ✅ Timeline / calendar view
-- ✅ GitHub activity-style heatmap
-- ✅ Light & dark themes
-- ✅ LocalStorage + optional Firebase sync
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-## 🛠️ Built With
+## Expanding the ESLint configuration
 
-- [React](https://reactjs.org/)
-- [Vite](https://vitejs.dev/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [GitHub](https://github.com/Manpreet113/BrainDump)
-
-## 🚀 Getting Started
-
-To run this project locally:
-
-```bash
-git clone https://github.com/Manpreet113/BrainDump.git
-cd BrainDump
-npm install
-npm run dev
+If you are developing a production application, we recommend using TypeScript and enable type-aware lint rules. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
