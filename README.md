@@ -32,20 +32,6 @@ No one asked for this. I made it anyway. 🫡
 If it breaks, blame Vite. Or React. Or the weather.
 
 ---
-## 🧾 File Structure (If it goes as planned)
-src/
-├── components/         # Reusable stuff (or just vibes)
-├── pages/              # Route-based pages
-│   ├── Thoughts.jsx
-│   ├── Ideas.jsx
-│   ├── Tasks.jsx
-│   └── Landing.jsx
-├── data/               # LocalStorage utils & whatever weird logic
-├── App.jsx             # Router magic happens here
-└── main.jsx            # Renders the whole circus
-
-
----
 
 ## ⚠️ Disclaimer
 
