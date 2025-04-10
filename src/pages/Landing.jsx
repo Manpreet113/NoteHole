@@ -8,7 +8,9 @@ function Landing() {
         <p className="text-lg mb-6">
           Your personal productivity OS. Dump thoughts, track ideas, get stuff done.
         </p>
-        <Button to="/thoughts">Enter the App</Button>
+        <Button to="/thoughts">Thoughts</Button><br />
+        <Button to="/ideas">Ideas</Button><br />
+        <Button to="/tasks">Tasks</Button>
       </div>
     </div>
   );
