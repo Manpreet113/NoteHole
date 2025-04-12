@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import Nav from '../components/Nav';
+import SearchBar from '../components/SearchBar';
 
 function Ideas() {
   const [ideas, setIdeas] = useState(() => {
@@ -11,6 +12,7 @@ function Ideas() {
   const [editingId, setEditingId] = useState(null);
   const [editTitle, setEditTitle] = useState('');
   const [editDescription, setEditDescription] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     localStorage.setItem('ideas', JSON.stringify(ideas));
@@ -50,12 +52,24 @@ function Ideas() {
     setEditDescription('');
   };
 
+  // Filter ideas based on search query
+  const filteredIdeas = ideas.filter(
+    (idea) =>
+      idea.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      idea.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="bg-gray-900 text-white min-h-screen">
       <Nav />
       <div className="p-6 relative">
         <h1 className="text-3xl font-bold mb-4">Ideas Board</h1>
         <div className="mb-4 space-y-2">
+          <SearchBar
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search ideas..."
+          />
           <input
             type="text"
             value={newTitle}
@@ -78,7 +92,7 @@ function Ideas() {
           +
         </button>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {ideas.map((idea) => (
+          {filteredIdeas.map((idea) => (
             <div
               key={idea.id}
               id={idea.id}

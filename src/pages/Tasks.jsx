@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import Nav from '../components/Nav';
+import SearchBar from '../components/SearchBar';
 
 function Tasks() {
   const [tasks, setTasks] = useState(() => {
@@ -7,7 +8,8 @@ function Tasks() {
     return savedTasks ? JSON.parse(savedTasks) : [];
   });
   const [newTask, setNewTask] = useState('');
-  const [filter, setFilter] = useState('all'); // all, pending, completed
+  const [filter, setFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     localStorage.setItem('tasks', JSON.stringify(tasks));
@@ -37,18 +39,28 @@ function Tasks() {
     setTasks(tasks.filter((task) => task.id !== id));
   };
 
-  const filteredTasks = tasks.filter((task) => {
-    if (filter === 'pending') return !task.completed;
-    if (filter === 'completed') return task.completed;
-    return true; // all
-  });
+  // Combine search and status filters
+  const filteredTasks = tasks
+    .filter((task) =>
+      task.name.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .filter((task) => {
+      if (filter === 'pending') return !task.completed;
+      if (filter === 'completed') return task.completed;
+      return true;
+    });
 
   return (
     <div className="bg-gray-900 text-white min-h-screen">
       <Nav />
       <div className="p-6 relative">
         <h1 className="text-3xl font-bold mb-4">To-Do Manager</h1>
-        <div className="mb-4">
+        <div className="mb-4 space-y-2">
+          <SearchBar
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search tasks..."
+          />
           <input
             type="text"
             value={newTask}

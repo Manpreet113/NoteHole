@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Nav from '../components/Nav';
+import SearchBar from '../components/SearchBar';
 
 function Thoughts() {
   const [thoughts, setThoughts] = useState(() => {
@@ -10,6 +11,7 @@ function Thoughts() {
   const [newThought, setNewThought] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     localStorage.setItem('thoughts', JSON.stringify(thoughts));
@@ -56,7 +58,7 @@ function Thoughts() {
     while ((match = regex.exec(text)) !== null) {
       const type = match[1];
       const slug = match[2];
-      parts.push(text.slice(lastIndex, match.index)); // Text before match
+      parts.push(text.slice(lastIndex, match.index));
 
       if (type === 'idea') {
         const idea = ideas.find((i) => i.title.toLowerCase().replace(/\s+/g, '-') === slug);
@@ -91,16 +93,25 @@ function Thoughts() {
       }
       lastIndex = regex.lastIndex;
     }
-    parts.push(text.slice(lastIndex)); // Remaining text
+    parts.push(text.slice(lastIndex));
     return parts;
   };
+
+  const filteredThoughts = thoughts.filter((thought) =>
+    thought.text.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="bg-gray-900 text-white min-h-screen">
       <Nav />
       <div className="p-6 relative">
         <h1 className="text-3xl font-bold mb-4">Thoughts Dump Zone</h1>
-        <div className="mb-4">
+        <div className="mb-4 space-y-2">
+          <SearchBar
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search thoughts..."
+          />
           <input
             type="text"
             value={newThought}
@@ -116,7 +127,7 @@ function Thoughts() {
           +
         </button>
         <ul className="space-y-2">
-          {thoughts.map((thought) => (
+          {filteredThoughts.map((thought) => (
             <li
               key={thought.id}
               className="p-2 bg-gray-800 rounded flex justify-between items-center"
