@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Nav from '../components/Nav';
 import SearchBar from '../components/SearchBar';
+import { parseText } from '../utils/parseText.jsx';
 
 function Ideas() {
   const [ideas, setIdeas] = useState(() => {
@@ -52,7 +53,6 @@ function Ideas() {
     setEditDescription('');
   };
 
-  // Filter ideas based on search query
   const filteredIdeas = ideas.filter(
     (idea) =>
       idea.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -81,7 +81,7 @@ function Ideas() {
             value={newDescription}
             onChange={(e) => setNewDescription(e.target.value)}
             className="w-full p-2 bg-gray-800 text-white rounded"
-            placeholder="Description..."
+            placeholder="Description... (e.g., @task:buy-milk)"
             rows="3"
           />
         </div>
@@ -130,7 +130,7 @@ function Ideas() {
               ) : (
                 <>
                   <h2 className="text-xl font-semibold">{idea.title}</h2>
-                  <p className="text-gray-300">{idea.description}</p>
+                  <p className="text-gray-300">{parseText(idea.description)}</p>
                   <p className="text-gray-400 text-sm mt-2">
                     {new Date(idea.createdAt).toLocaleString()}
                   </p>

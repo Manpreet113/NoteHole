@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Nav from '../components/Nav';
 import SearchBar from '../components/SearchBar';
+import { parseText } from '../utils/parseText.jsx';
 
 function Tasks() {
   const [tasks, setTasks] = useState(() => {
@@ -39,7 +40,6 @@ function Tasks() {
     setTasks(tasks.filter((task) => task.id !== id));
   };
 
-  // Combine search and status filters
   const filteredTasks = tasks
     .filter((task) =>
       task.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -66,7 +66,7 @@ function Tasks() {
             value={newTask}
             onChange={(e) => setNewTask(e.target.value)}
             className="w-full p-2 bg-gray-800 text-white rounded"
-            placeholder="Add a task..."
+            placeholder="Add a task... (e.g., @idea:dark-mode)"
           />
         </div>
         <button
@@ -110,7 +110,7 @@ function Tasks() {
                   className="h-5 w-5 text-blue-600"
                 />
                 <span className={task.completed ? 'line-through text-gray-400' : ''}>
-                  {task.name}
+                  {parseText(task.name)}
                 </span>
               </div>
               <div className="flex space-x-2">

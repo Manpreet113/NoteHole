@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import Nav from '../components/Nav';
 import SearchBar from '../components/SearchBar';
+import { parseText } from '../utils/parseText.jsx';
 
 function Thoughts() {
   const [thoughts, setThoughts] = useState(() => {
@@ -45,56 +45,6 @@ function Thoughts() {
     );
     setEditingId(null);
     setEditText('');
-  };
-
-  const parseText = (text) => {
-    const ideas = JSON.parse(localStorage.getItem('ideas') || '[]');
-    const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
-    const regex = /@(idea|task):([a-z0-9-]+)/g;
-    let match;
-    const parts = [];
-    let lastIndex = 0;
-
-    while ((match = regex.exec(text)) !== null) {
-      const type = match[1];
-      const slug = match[2];
-      parts.push(text.slice(lastIndex, match.index));
-
-      if (type === 'idea') {
-        const idea = ideas.find((i) => i.title.toLowerCase().replace(/\s+/g, '-') === slug);
-        if (idea) {
-          parts.push(
-            <Link
-              key={match.index}
-              to={`/ideas#${idea.id}`}
-              className="text-blue-400 hover:underline"
-            >
-              {match[0]}
-            </Link>
-          );
-        } else {
-          parts.push(match[0]);
-        }
-      } else if (type === 'task') {
-        const task = tasks.find((t) => t.name.toLowerCase().replace(/\s+/g, '-') === slug);
-        if (task) {
-          parts.push(
-            <Link
-              key={match.index}
-              to={`/tasks#${task.id}`}
-              className="text-blue-400 hover:underline"
-            >
-              {match[0]}
-            </Link>
-          );
-        } else {
-          parts.push(match[0]);
-        }
-      }
-      lastIndex = regex.lastIndex;
-    }
-    parts.push(text.slice(lastIndex));
-    return parts;
   };
 
   const filteredThoughts = thoughts.filter((thought) =>
