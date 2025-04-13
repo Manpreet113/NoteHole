@@ -21,12 +21,12 @@ function Landing() {
   ];
 
   return (
-    <div className="min-h-screen bg-white text-black flex flex-col items-center">
-      <Nav />
+    <div className="min-h-screen bg-white dark:bg-black text-black flex flex-col items-center">
+      {/* <Nav /> */}
       <header className="w-full max-w-4xl px-4 py-6 flex justify-between items-center">
         <h1
           className="text-2xl font-bold"
-          style={{ fontFamily: 'Railway, sans-serif' }}
+          style={{ fontFamily: "var(--font-secondary)" }}
         >
           BrainDump
         </h1>
@@ -35,7 +35,7 @@ function Landing() {
         </button>
       </header>
       <main className="flex-1 flex flex-col items-center justify-center text-center px-4">
-        <h2 className="text-5xl font-bold mb-4" style={{ fontFamily: 'Railway, sans-serif' }}>
+        <h2 className="text-5xl font-bold mb-4">
           Declutter your mind, one dump at a time.
         </h2>
         <p className="text-lg mb-6 max-w-lg">
@@ -48,7 +48,7 @@ function Landing() {
         </Link>
       </main>
       <section className="w-full max-w-4xl px-4 py-10">
-        <h3 className="text-3xl font-bold mb-8 text-center" style={{ fontFamily: 'Railway, sans-serif' }}>
+        <h3 className="text-3xl font-bold mb-8 text-center">
           Core Features
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -58,7 +58,7 @@ function Landing() {
               className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-200"
             >
               <i className={`${feature.icon} text-3xl text-purple-600 mb-4`}></i>
-              <h4 className="text-xl font-semibold mb-2" style={{ fontFamily: 'Railway, sans-serif' }}>
+              <h4 className="text-xl font-semibold mb-2">
                 {feature.name}
               </h4>
               <ul className="list-disc list-inside text-sm">
