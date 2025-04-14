@@ -117,7 +117,7 @@ function Landing({ isDark, toggleDarkMode }) {
       </section>
       <div className="h-screen w-full pt-20 px-4">
       <h3 className="text-3xl font-bold mb-8 text-center">Common Questions</h3>
-        <div className="mx-auto w-full max-w-3/4 bg-gray-100 divide-y divide-black/30 dark:divide-white/5 border rounded-xl  dark:bg-white/5">
+        <div className="mx-auto w-full max-w-3/4 backdrop-blur-2xl bg-gray-100/5 divide-y divide-black/30 dark:divide-white/5 border rounded-xl  dark:bg-white/5">
           <Disclosure as="div" className="p-6" defaultOpen={true}>
             <DisclosureButton className="group flex w-full items-center justify-between">
               <span className="text-sm/6 font-medium group-data-[hover]:text-gray-900/80 dark:group-data-[hover]:text-white/80">
