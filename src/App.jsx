@@ -4,7 +4,8 @@ import Thoughts from './pages/Thoughts';
 import Ideas from './pages/Ideas';
 import Tasks from './pages/Tasks';
 import { useEffect, useState } from 'react';
-import LoginForm from './pages/LoginForm';
+import LoginForm from './components/Login';
+import Signup from './components/Signup';
 
 function App() {
   const [darkMode, setDarkMode] = useState(() => {
@@ -33,6 +34,7 @@ function App() {
       <Route path="/ideas" element={<Ideas />} />
       <Route path="/tasks" element={<Tasks />} />
       <Route path="/login" element={<LoginForm />} />
+      <Route path='/signup' element={<Signup />} />
     </Routes>
   );
 }
