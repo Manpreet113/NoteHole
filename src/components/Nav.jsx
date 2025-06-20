@@ -1,39 +1,28 @@
-import { Link, useLocation } from 'react-router-dom';
+import { useSearch } from '../context/SearchContext';
+import SearchBar from './SearchBar';
+import { Menu, X, UserCircle } from 'lucide-react';
 
-function Nav() {
-  const location = useLocation(); // Get current route
+function Nav({ onToggleSidebar, isSidebarLocked }) {
+  const { searchQuery, setSearchQuery } = useSearch(); // 🔥 new
 
   return (
-    <nav className="bg-gray-800 text-white p-4">
-      <div className="container mx-auto flex justify-between items-center">
-        <Link to="/" className="text-xl font-bold">
-          BrainDump
-        </Link>
-        <div className="space-x-4">
-          <Link
-            to="/thoughts"
-            className={`hover:text-blue-400 ${
-              location.pathname === '/thoughts' ? 'text-blue-400' : ''
-            }`}
-          >
-            Thoughts
-          </Link>
-          <Link
-            to="/ideas"
-            className={`hover:text-blue-400 ${
-              location.pathname === '/ideas' ? 'text-blue-400' : ''
-            }`}
-          >
-            Ideas
-          </Link>
-          <Link
-            to="/tasks"
-            className={`hover:text-blue-400 ${
-              location.pathname === '/tasks' ? 'text-blue-400' : ''
-            }`}
-          >
-            Tasks
-          </Link>
+    <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-30 w-5/6">
+      <div className="flex items-center justify-between bg-white/60 backdrop-blur-md rounded-full px-4 py-3 shadow-lg border">
+        <button
+          onClick={onToggleSidebar}
+          className="text-black hover:text-blue-500 transition-colors"
+        >
+          {isSidebarLocked ? <X size={24} /> : <Menu size={24} />}
+        </button>
+
+        <SearchBar
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search for dumps"
+        />
+
+        <div className="cursor-pointer">
+          <UserCircle size={28} className="text-gray-700 hover:text-blue-500 transition-colors" />
         </div>
       </div>
     </nav>

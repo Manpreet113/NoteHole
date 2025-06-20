@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import Nav from '../components/Nav';
-import SearchBar from '../components/SearchBar';
+import Nav from '../components/Nav.jsx';
+import SearchBar from '../components/SearchBar.jsx';
 import { parseText } from '../utils/parseText.jsx';
 
 function Tasks() {
