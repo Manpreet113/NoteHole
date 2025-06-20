@@ -1,19 +1,22 @@
+// ✅ Updated Thoughts.jsx to match landing page theme (glassmorphism + soft colors)
 import { useState, useEffect } from 'react';
 import Nav from '../components/Nav';
 import SideBar from '../components/Sidebar.jsx';
-import { useSearch } from '../context/SearchContext';
 import { parseText } from '../utils/parseText.jsx';
+import useSearchStore from '../store/useSearchStore';
+import Fuse from 'fuse.js';
 
 function Thoughts() {
   const [thoughts, setThoughts] = useState(() => {
     const savedThoughts = localStorage.getItem('thoughts');
     return savedThoughts ? JSON.parse(savedThoughts) : [];
   });
+
   const [newThought, setNewThought] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState('');
 
-  const { searchQuery } = useSearch(); // 💥 using global search
+  const { searchQuery } = useSearchStore();
 
   useEffect(() => {
     localStorage.setItem('thoughts', JSON.stringify(thoughts));
@@ -49,17 +52,25 @@ function Thoughts() {
     setEditText('');
   };
 
-  const filteredThoughts = thoughts.filter((thought) =>
-    thought.text.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const fuse = new Fuse(thoughts, {
+    keys: ['text'],
+    threshold: 0.3,
+  });
+
+  const filteredThoughts =
+    searchQuery.trim() === ''
+      ? thoughts
+      : fuse.search(searchQuery).map((result) => result.item);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-black text-black dark:text-white flex flex-col items-center">
+    <div
+      className={`min-h-screen bg-gray-50 dark:bg-black text-black dark:text-white flex flex-col items-center transition-all duration-300`}
+    >
       <Nav />
-      <main>
-        <div className="bg-blue-300 text-white min-h-screen px-6 pt-6">
-          <h1 className="text-3xl font-bold mb-4">Thoughts Dump Zone</h1>
+      <main className="w-full px-6 pt-6">
+        <h1 className="text-3xl font-bold mb-4 text-center">Thoughts Dump Zone</h1>
 
+        <div className="max-w-3xl mx-auto backdrop-blur-lg bg-white/10 dark:bg-white/5 p-4 rounded-xl shadow-xl">
           <input
             type="text"
             value={newThought}
@@ -69,17 +80,17 @@ function Thoughts() {
           />
 
           <button
-            onClick={addThought}
-            className="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white w-12 h-12 rounded-full flex items-center justify-center text-2xl shadow-lg"
-          >
-            +
+              onClick={addThought}
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-purple-600 hover:bg-purple-700 text-white w-10 h-10 rounded-full flex items-center justify-center text-xl shadow-lg"
+            >
+              +
           </button>
 
-          <ul className="space-y-2 mt-4">
+          <ul className="space-y-4 mt-6">
             {filteredThoughts.map((thought) => (
               <li
                 key={thought.id}
-                className="p-2 bg-gray-800 rounded flex justify-between items-center"
+                className="p-4 bg-gray-800 rounded-lg flex justify-between items-center shadow-md"
               >
                 {editingId === thought.id ? (
                   <div className="flex w-full space-x-2">
@@ -87,11 +98,11 @@ function Thoughts() {
                       type="text"
                       value={editText}
                       onChange={(e) => setEditText(e.target.value)}
-                      className="flex-1 p-1 bg-purple-700 text-white rounded"
+                      className="flex-1 p-2 bg-purple-700 text-white rounded"
                     />
                     <button
                       onClick={() => saveEdit(thought.id)}
-                      className="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded"
+                      className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded"
                     >
                       Save
                     </button>

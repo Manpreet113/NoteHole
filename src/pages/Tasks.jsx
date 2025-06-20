@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Nav from '../components/Nav.jsx';
-import SearchBar from '../components/SearchBar.jsx';
 import { parseText } from '../utils/parseText.jsx';
+import SideBar from '../components/Sidebar.jsx';
 
 function Tasks() {
   const [tasks, setTasks] = useState(() => {
@@ -11,10 +11,26 @@ function Tasks() {
   const [newTask, setNewTask] = useState('');
   const [filter, setFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [pos, setPos] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     localStorage.setItem('tasks', JSON.stringify(tasks));
   }, [tasks]);
+
+  useEffect(() => {
+    let animationFrameId;
+    const handleMouseMove = (e) => {
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+      animationFrameId = requestAnimationFrame(() => {
+        setPos({ x: e.clientX, y: e.clientY });
+      });
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      window.removeEventListener('mousemove', handleMouseMove);
+    };
+  }, []);
 
   const addTask = () => {
     if (newTask.trim() === '') return;
@@ -51,71 +67,73 @@ function Tasks() {
     });
 
   return (
-    <div className="bg-gray-900 text-white min-h-screen">
+    <div className="relative min-h-screen bg-gray-50 dark:bg-black text-black dark:text-white">
+      {/* Radial gradient background hover effect */}
+      <div
+        className="pointer-events-none fixed top-0 left-0 w-full h-full z-0"
+        style={{
+          background: `radial-gradient(circle at ${pos.x}px ${pos.y}px, rgba(168, 85, 247, 0.25), transparent 16%)`,
+          transition: 'background 0.1s ease-out',
+          willChange: 'background',
+        }}
+      />
+
+      {/* Nav now handles sidebar toggle */}
       <Nav />
-      <div className="p-6 relative">
-        <h1 className="text-3xl font-bold mb-4">To-Do Manager</h1>
-        <div className="mb-4 space-y-2">
-          <SearchBar
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search tasks..."
-          />
+
+      <main className="relative z-10 pt-20 px-6 md:px-20 lg:px-36">
+        <h1 className="text-4xl font-bold mb-4">Task Manager</h1>
+
+        <div className="mb-6 space-y-4">
+
           <input
             type="text"
             value={newTask}
             onChange={(e) => setNewTask(e.target.value)}
-            className="w-full p-2 bg-gray-800 text-white rounded"
+            className="w-full px-4 py-2 bg-white/5 border border-purple-400/40 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-purple-500"
             placeholder="Add a task... (e.g., @idea:dark-mode)"
           />
         </div>
-        <button
-          onClick={addTask}
-          className="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white w-12 h-12 rounded-full flex items-center justify-center text-2xl shadow-lg"
-        >
-          +
-        </button>
-        <div className="mb-4 flex space-x-4">
-          <button
-            onClick={() => setFilter('all')}
-            className={`px-3 py-1 rounded ${filter === 'all' ? 'bg-blue-600' : 'bg-gray-700'}`}
-          >
-            All
-          </button>
-          <button
-            onClick={() => setFilter('pending')}
-            className={`px-3 py-1 rounded ${filter === 'pending' ? 'bg-blue-600' : 'bg-gray-700'}`}
-          >
-            Pending
-          </button>
-          <button
-            onClick={() => setFilter('completed')}
-            className={`px-3 py-1 rounded ${filter === 'completed' ? 'bg-blue-600' : 'bg-gray-700'}`}
-          >
-            Completed
-          </button>
+
+        <div className="mb-6 flex gap-4">
+          {['all', 'pending', 'completed'].map((type) => (
+            <button
+              key={type}
+              onClick={() => setFilter(type)}
+              className={`px-4 py-1 rounded-full text-sm font-medium border transition duration-200 ${
+                filter === type
+                  ? 'bg-purple-600 text-white border-purple-700'
+                  : 'bg-transparent border-gray-400 text-gray-600 dark:text-gray-300'
+              }`}
+            >
+              {type.charAt(0).toUpperCase() + type.slice(1)}
+            </button>
+          ))}
         </div>
-        <ul className="space-y-2">
+
+        <ul className="space-y-3">
           {filteredTasks.map((task) => (
             <li
               key={task.id}
               id={task.id}
-              className="p-2 bg-gray-800 rounded flex justify-between items-center"
+              className="bg-white/5 border border-purple-200/10 backdrop-blur-sm p-4 rounded-lg flex items-center justify-between shadow-md"
             >
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center gap-3">
                 <input
                   type="checkbox"
                   checked={task.completed}
                   onChange={() => toggleTask(task.id)}
-                  className="h-5 w-5 text-blue-600"
+                  className="h-5 w-5 text-purple-600"
                 />
-                <span className={task.completed ? 'line-through text-gray-400' : ''}>
+                <span className={`text-base ${
+                  task.completed ? 'line-through text-gray-500' : ''
+                }`}>
                   {parseText(task.name)}
                 </span>
               </div>
-              <div className="flex space-x-2">
-                <span className="text-gray-400 text-sm">
-                  ({new Date(task.createdAt).toLocaleString()})
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-gray-400">
+                  {new Date(task.createdAt).toLocaleString()}
                 </span>
                 <button
                   onClick={() => deleteTask(task.id)}
@@ -127,7 +145,17 @@ function Tasks() {
             </li>
           ))}
         </ul>
-      </div>
+
+        <button
+          onClick={addTask}
+          className="fixed bottom-6 right-6 bg-purple-600 text-white px-6 py-3 rounded-full text-lg hover:bg-purple-700 shadow-xl backdrop-blur-md border border-purple-300"
+        >
+          Add Task
+        </button>
+      </main>
+      <aside>
+        <SideBar />
+      </aside>
     </div>
   );
 }

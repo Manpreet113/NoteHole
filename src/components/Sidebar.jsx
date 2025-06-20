@@ -1,8 +1,10 @@
 import { Link, useLocation } from 'react-router-dom';
 import { Lightbulb, BrainCircuit, ListChecks } from 'lucide-react';
+import useSidebarStore from '../store/useSidebarStore'; // 👈 import Zustand store
 
-function SideBar({ isLocked }) {
+function SideBar() {
   const location = useLocation();
+  const { isExpanded } = useSidebarStore(); // 👈 get sidebar state from store
 
   const links = [
     {
@@ -27,8 +29,8 @@ function SideBar({ isLocked }) {
 
   return (
     <div
-      className={`fixed left-0 top-1/2 -translate-y-1/2 bg-black text-wrap p-4 rounded-r-2xl shadow-lg overflow-hidden z-20 transition-all
-        ${isLocked ? 'w-40' : 'w-16 hover:w-40 group'}
+      className={`fixed left-0 top-1/2 -translate-y-1/2 backdrop-blur-lg text-wrap p-4 rounded-r-2xl shadow-lg overflow-hidden z-20 transition-all
+        ${isExpanded ? 'w-40' : 'w-16 group hover:w-40'}
       `}
     >
       <div className="flex flex-col gap-6">
@@ -41,13 +43,14 @@ function SideBar({ isLocked }) {
                   location.pathname === path ? `${activeColor} scale-110` : 'text-white'
                 }`}
               />
-              {/* Label shows on lock OR hover */}
-              {(isLocked || !isLocked) && (
-                <span
-                  className={`text-sm font-medium text-white transition-all
-                    ${isLocked ? 'inline-block' : 'hidden group-hover:inline-block'}
-                  `}
-                >
+              {/* Label shows on expand OR on hover */}
+              {isExpanded && (
+                <span className="text-sm font-medium text-white transition-all inline-block">
+                  {label}
+                </span>
+              )}
+              {!isExpanded && (
+                <span className="text-sm font-medium text-white transition-all hidden group-hover:inline-block">
                   {label}
                 </span>
               )}
