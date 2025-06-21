@@ -67,7 +67,7 @@ function Tasks() {
     });
 
   return (
-    <div className="relative min-h-screen bg-gray-50 dark:bg-black text-black dark:text-white">
+    <div className="ml-10 mr-10 relative min-h-screen bg-gray-50 dark:bg-black text-black dark:text-white">
       {/* Radial gradient background hover effect */}
       <div
         className="pointer-events-none fixed top-0 left-0 w-full h-full z-0"

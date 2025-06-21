@@ -1,5 +1,3 @@
-// ✅ Updated Nav.jsx to match landing page style with toggleable sidebar and global search
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
@@ -13,7 +11,6 @@ function Nav() {
   // State to control sidebar expansion
   const { toggleSidebar } = useSidebarStore();
 
-  const [expanded, setExpanded] = useState(false); // Sidebar expansion state
 
   // Reset search on route change
   useEffect(() => {
@@ -37,7 +34,7 @@ function Nav() {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="flex-1 mx-6 px-4 py-2 rounded-full bg-gray-100/80 dark:bg-gray-800 text-black dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 border border-gray-300 dark:border-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-          placeholder="Search across thoughts, ideas, tasks..."
+          placeholder="Search the dump"
         />
 
         {/* Placeholder for future auth logic */}

@@ -20,10 +20,26 @@ function Ideas() {
 
   const { searchQuery } = useSearchStore();
   const { isExpanded } = useSidebarStore();
+  const [pos, setPos] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     localStorage.setItem('ideas', JSON.stringify(ideas));
   }, [ideas]);
+
+  useEffect(() => {
+      let animationFrameId;
+      const handleMouseMove = (e) => {
+        if (animationFrameId) cancelAnimationFrame(animationFrameId);
+        animationFrameId = requestAnimationFrame(() => {
+          setPos({ x: e.clientX, y: e.clientY });
+        });
+      };
+      window.addEventListener('mousemove', handleMouseMove);
+      return () => {
+        cancelAnimationFrame(animationFrameId);
+        window.removeEventListener('mousemove', handleMouseMove);
+      };
+    }, []);
 
   const addIdea = () => {
     if (newTitle.trim() === '') return;
@@ -70,23 +86,35 @@ function Ideas() {
       : fuse.search(searchQuery).map((result) => result.item);
 
   return (
-    <div className={`min-h-screen bg-gray-50 dark:bg-black text-black dark:text-white transition-all duration-300 ${isExpanded ? 'pl-64' : 'pl-20'}`}>
+    <div className="relative min-h-screen bg-gray-50 dark:bg-black text-black dark:text-white">
+      {/* Radial gradient background hover effect */}
+      <div
+        className="pointer-events-none fixed top-0 left-0 w-full h-full z-0"
+        style={{
+          background: `radial-gradient(circle at ${pos.x}px ${pos.y}px, rgba(168, 85, 247, 0.25), transparent 16%)`,
+          transition: 'background 0.1s ease-out',
+          willChange: 'background',
+        }}
+      />
+
+      {/* Nav now handles sidebar toggle */}
       <Nav />
-      <div className="p-6 relative">
-        <h1 className="text-3xl font-bold mb-4">Ideas Board</h1>
-        <div className="mb-4 space-y-2">
-          
+      <main className="relative z-10 pt-20 px-6 md:px-20 lg:px-36">
+        <h1 className="text-4xl font-bold mb-4">Ideas Board</h1>
+        <div className="mb-6 space-y-4">
+
           <input
             type="text"
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
-            className="w-full p-2 bg-gray-100 dark:bg-gray-800 text-black dark:text-white rounded"
-            placeholder="Idea title..."
+            className="w-full px-4 py-2 bg-white/5 border border-purple-400/40 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+            placeholder="Add a task... (e.g., @idea:dark-mode)"
           />
+
           <textarea
             value={newDescription}
             onChange={(e) => setNewDescription(e.target.value)}
-            className="w-full p-2 bg-gray-100 dark:bg-gray-800 text-black dark:text-white rounded"
+            className="w-full px-4 py-2 bg-white/5 border border-purple-400/40 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-purple-500"
             placeholder="Description..."
             rows="3"
           />
@@ -161,10 +189,11 @@ function Ideas() {
             </div>
           ))}
         </div>
-        <aside>
+        
+      </main>
+      <aside>
           <SideBar />
         </aside>
-      </div>
     </div>
   );
 }

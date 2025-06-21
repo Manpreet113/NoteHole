@@ -29,7 +29,7 @@ function SideBar() {
 
   return (
     <div
-      className={`fixed left-0 top-1/2 -translate-y-1/2 backdrop-blur-lg text-wrap p-4 rounded-r-2xl shadow-lg overflow-hidden z-20 transition-all
+      className={`fixed left-0 top-1/2 -translate-y-1/2 border-gray-700 border-r border-t border-b backdrop-blur-lg text-wrap p-4 rounded-r-2xl shadow-lg overflow-hidden z-20 transition-all
         ${isExpanded ? 'w-40' : 'w-16 group hover:w-40'}
       `}
     >
