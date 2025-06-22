@@ -5,7 +5,6 @@ import Ideas from './pages/Ideas';
 import Tasks from './pages/Tasks';
 import { useEffect, useState } from 'react';
 import LoginForm from './components/Login';
-import Signup from './components/Signup';
 import { SearchProvider } from './context/SearchContext';
 
 function App() {
@@ -36,7 +35,6 @@ function App() {
       <Route path="/ideas" element={<Ideas />} />
       <Route path="/tasks" element={<Tasks />} />
       <Route path="/login" element={<LoginForm />} />
-      <Route path='/signup' element={<Signup />} />
     </Routes>
     </SearchProvider>
   );

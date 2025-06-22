@@ -73,9 +73,9 @@ function Landing({ isDark, toggleDarkMode }) {
                 <i className="ri-moon-line text-xl"></i>
               )}
             </button>
-            <Link to="/signup">
+            <Link to="/login">
             <button className="bg-purple-600 text-white px-4 py-2 rounded-full hover:bg-purple-700 transition duration-200">
-              Sign-up
+              Log In
             </button>
             </Link>
           </div>
