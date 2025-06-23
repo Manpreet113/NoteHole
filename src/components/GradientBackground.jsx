@@ -1,0 +1,31 @@
+import { useState, useEffect } from "react";
+
+export default function GradientBackground() {
+  const [pos, setPos] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    let animationFrameId;
+    const handleMouseMove = (e) => {
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+      animationFrameId = requestAnimationFrame(() => {
+        setPos({ x: e.clientX, y: e.clientY });
+      });
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, []);
+
+  return (
+    <div
+      className="pointer-events-none fixed top-0 left-0 w-full h-full z-0"
+      style={{
+        background: `radial-gradient(circle at ${pos.x}px ${pos.y}px, rgba(168, 85, 247, 0.25), transparent 16%)`,
+        transition: "background 0.1s ease-out",
+        willChange: "background",
+      }}
+    />
+  );
+}

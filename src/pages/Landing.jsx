@@ -5,8 +5,11 @@ import {
   DisclosureButton,
   DisclosurePanel,
 } from "@headlessui/react";
+import useDarkModeStore from "../store/useDarkModeStore";
 
-function Landing({ isDark, toggleDarkMode }) {
+function Landing() {
+  const { isDark, toggleDarkMode } = useDarkModeStore();
+
   const features = [
     {
       name: "Note Dump",
