@@ -1,6 +1,4 @@
 import { useState, useEffect } from 'react';
-import Nav from '../components/Nav';
-import SideBar from '../components/Sidebar.jsx';
 import { parseText } from '../utils/parseText.jsx';
 import useSearchStore from '../store/useSearchStore';
 import Fuse from 'fuse.js';
@@ -90,7 +88,6 @@ function Thoughts() {
           willChange: 'background',
         }}
       />
-      <Nav />
       <main className="relative z-10 pt-20 px-6 md:px-20 lg:px-36">
         <h1 className="text-4xl font-bold mb-4">Thoughts Dump Zone</h1>
 
@@ -162,9 +159,6 @@ function Thoughts() {
           </ul>
         </div>
       </main>
-      <aside>
-        <SideBar />
-      </aside>
     </div>
   );
 }

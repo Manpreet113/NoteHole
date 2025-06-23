@@ -1,11 +1,8 @@
-// ✅ Synced Ideas.jsx with Landing Page theme (glassmorphism, purple accents, clean UI)
 import { useState, useEffect } from 'react';
 import Nav from '../components/Nav';
 import { parseText } from '../utils/parseText.jsx';
 import useSearchStore from '../store/useSearchStore';
-import useSidebarStore from '../store/useSidebarStore';
 import Fuse from 'fuse.js';
-import SideBar from '../components/Sidebar.jsx';
 
 function Ideas() {
   const [ideas, setIdeas] = useState(() => {
@@ -19,7 +16,6 @@ function Ideas() {
   const [editDescription, setEditDescription] = useState('');
 
   const { searchQuery } = useSearchStore();
-  const { isExpanded } = useSidebarStore();
   const [pos, setPos] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
@@ -97,8 +93,7 @@ function Ideas() {
         }}
       />
 
-      {/* Nav now handles sidebar toggle */}
-      <Nav />
+    
       <main className="relative z-10 pt-20 px-6 md:px-20 lg:px-36">
         <h1 className="text-4xl font-bold mb-4">Ideas Board</h1>
         <div className="mb-6 space-y-4">
@@ -191,9 +186,6 @@ function Ideas() {
         </div>
         
       </main>
-      <aside>
-          <SideBar />
-        </aside>
     </div>
   );
 }

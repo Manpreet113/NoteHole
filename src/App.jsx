@@ -6,6 +6,7 @@ import Tasks from './pages/Tasks';
 import { useEffect, useState } from 'react';
 import LoginForm from './components/Login';
 import { SearchProvider } from './context/SearchContext';
+import Layout from './components/Layout';
 
 function App() {
   const [darkMode, setDarkMode] = useState(() => {
@@ -31,9 +32,11 @@ function App() {
     <SearchProvider>
     <Routes>
       <Route path="/" element={<Landing toggleDarkMode={setDarkMode} isDark={darkMode}/>} />
+      <Route element={<Layout />} >
       <Route path="/thoughts" element={<Thoughts />} />
       <Route path="/ideas" element={<Ideas />} />
       <Route path="/tasks" element={<Tasks />} />
+      </Route>
       <Route path="/login" element={<LoginForm />} />
     </Routes>
     </SearchProvider>

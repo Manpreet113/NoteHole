@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
-import Nav from '../components/Nav.jsx';
 import { parseText } from '../utils/parseText.jsx';
-import SideBar from '../components/Sidebar.jsx';
 
 function Tasks() {
   const [tasks, setTasks] = useState(() => {
@@ -78,9 +76,6 @@ function Tasks() {
         }}
       />
 
-      {/* Nav now handles sidebar toggle */}
-      <Nav />
-
       <main className="relative z-10 pt-20 px-6 md:px-20 lg:px-36">
         <h1 className="text-4xl font-bold mb-4">Task Manager</h1>
 
@@ -153,9 +148,6 @@ function Tasks() {
           Add Task
         </button>
       </main>
-      <aside>
-        <SideBar />
-      </aside>
     </div>
   );
 }
