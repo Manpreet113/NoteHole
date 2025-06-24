@@ -4,6 +4,7 @@ import useSearchStore from '../store/useSearchStore';
 import useSidebarStore from '../store/useSidebarStore';
 import useDarkModeStore from '../store/useDarkModeStore';
 import { motion } from 'framer-motion';
+import { link } from 'framer-motion/m';
 
 function Nav() {
   const { isDark, toggleDarkMode } = useDarkModeStore();
@@ -70,12 +71,13 @@ function Nav() {
 
         {/* 🧠 BrainDump Title (visible on larger screens) */}
         {!isTinyScreen && (
-          <h1
+          <Link to="/" aria-label='BrainDump Landing Page'><h1
             className="sm:block text-xl sm:text-2xl font-semibold tracking-tight"
             style={{ fontFamily: 'var(--font-secondary)' }}
           >
             BrainDump
           </h1>
+          </Link>
         )}
 
         {/* 🔍 Search bar (with title embedded if on tiny screen) */}

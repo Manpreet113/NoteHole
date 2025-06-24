@@ -7,34 +7,31 @@ import {
 } from "@headlessui/react";
 import useDarkModeStore from "../store/useDarkModeStore";
 
+const features = [
+  {
+    name: "Note Dump",
+    icon: "ri-file-text-line",
+    pros: ["Capture fleeting thoughts", "Quick edits", "Cross-link ideas"],
+  },
+  {
+    name: "Idea Board",
+    icon: "ri-lightbulb-flash-line",
+    pros: ["Organize creative sparks", "Visual grid layout", "Link to tasks"],
+  },
+  {
+    name: "Task Tracker",
+    icon: "ri-check-line",
+    pros: ["Track progress", "Filter by status", "Link to notes"],
+  },
+];
+
 function Landing() {
   const { isDark, toggleDarkMode } = useDarkModeStore();
-
-  const features = [
-    {
-      name: "Note Dump",
-      icon: "ri-file-text-line",
-      pros: ["Capture fleeting thoughts", "Quick edits", "Cross-link ideas"],
-    },
-    {
-      name: "Idea Board",
-      icon: "ri-lightbulb-flash-line",
-      pros: ["Organize creative sparks", "Visual grid layout", "Link to tasks"],
-    },
-    {
-      name: "Task Tracker",
-      icon: "ri-check-line",
-      pros: ["Track progress", "Filter by status", "Link to notes"],
-    },
-  ];
-
   const [pos, setPos] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     let animationFrameId;
-
     const handleMouseMove = (e) => {
-      if (animationFrameId) cancelAnimationFrame(animationFrameId);
       animationFrameId = requestAnimationFrame(() => {
         setPos({ x: e.clientX, y: e.clientY });
       });
@@ -49,49 +46,49 @@ function Landing() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black text-black dark:text-white flex flex-col items-center">
+      {/* Radial Gradient Follower */}
       <div
-        className="pointer-events-none fixed top-0 left-0 w-full h-full z-0"
+        className="pointer-events-none fixed inset-0 z-0"
         style={{
           background: `radial-gradient(circle at ${pos.x}px ${pos.y}px, rgba(168, 85, 247, 0.25), transparent 16%)`,
           transition: "background 0.1s ease-out",
           willChange: "background",
         }}
       />
-      <header className="pt-6 px-6  flex justify-center">
-        <div className="flex items-center justify-between border fixed z-30 w-5/6 backdrop-blur-xs rounded-full px-4 py-2 shadow-lg">
+
+      {/* Header */}
+      <header className="w-full fixed top-0 z-30">
+        <div className="container mx-auto px-4 py-3 flex justify-between items-center backdrop-blur-md bg-white/30 dark:bg-black/30 rounded-b-xl shadow-md">
           <h1
-            className="text-2xl font-bold tracking-tight"
+            className="text-xl sm:text-2xl font-bold tracking-tight"
             style={{ fontFamily: "var(--font-secondary)" }}
           >
             BrainDump
           </h1>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <button
               onClick={() => toggleDarkMode(!isDark)}
+              aria-label="Toggle dark mode"
               className="p-2 rounded-full hover:bg-purple-600 dark:hover:bg-purple-700 transition-colors"
             >
-              {isDark ? (
-                <i className="ri-sun-line text-xl"></i>
-              ) : (
-                <i className="ri-moon-line text-xl"></i>
-              )}
+              <i className={`text-xl ${isDark ? "ri-sun-line" : "ri-moon-line"}`}></i>
             </button>
             <Link to="/login">
-            <button className="bg-purple-600 text-white px-4 py-2 rounded-full hover:bg-purple-700 transition duration-200">
-              Log In
-            </button>
+              <button className="bg-purple-600 text-white px-4 py-2 rounded-full hover:bg-purple-700 transition duration-200">
+                Log In
+              </button>
             </Link>
           </div>
         </div>
       </header>
-      <main className="flex-1 flex flex-col pt-50 items-center justify-center text-center px-4">
-        <h2 className="text-5xl font-bold mb-4">
+
+      {/* Hero */}
+      <main className="flex flex-col items-center justify-center text-center px-6 pt-32 sm:pt-40 lg:pt-48 pb-12 max-w-screen-md mx-auto">
+        <h2 className="text-3xl sm:text-5xl font-bold mb-4 leading-tight">
           Declutter your mind, one dump at a time.
         </h2>
-        <p className="text-lg mb-6 max-w-lg">
-          Your personal mental tracking dashboard — a minimal tool to log
-          thoughts, track tasks, organize random ideas before they vanish into
-          the void.
+        <p className="text-base sm:text-lg mb-6 text-gray-600 dark:text-gray-300">
+          Your personal mental tracking dashboard — log thoughts, track tasks, organize ideas before they vanish into the void.
         </p>
         <Link to="/thoughts">
           <button className="bg-purple-600 text-white px-6 py-3 rounded-full text-lg hover:bg-purple-700 transition duration-200">
@@ -99,19 +96,21 @@ function Landing() {
           </button>
         </Link>
       </main>
-      <section className="w-4/6 pt-20 px-4 py-10">
-        <h3 className="text-3xl font-bold mb-8 text-center">Core Features</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+      {/* Features */}
+      <section className="w-full max-w-screen-xl px-6 py-12">
+        <h3 className="text-2xl sm:text-3xl font-bold mb-8 text-center">
+          Core Features
+        </h3>
+        <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
           {features.map((feature, index) => (
             <div
               key={index}
-              className="bg-gray-100 dark:bg-gray-900 z-10 p-6 rounded-lg shadow-2xs dark:hover:bg-gray-950 border hover:scale-110  hover:shadow-2xl transition duration-200"
+              className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-md hover:shadow-xl hover:scale-[1.03] transition duration-200"
             >
-              <i
-                className={`${feature.icon} text-3xl text-purple-600 mb-4`}
-              ></i>
-              <h4 className="text-xl font-semibold mb-2">{feature.name}</h4>
-              <ul className="list-disc list-inside text-sm">
+              <i className={`${feature.icon} text-3xl text-purple-600 mb-4`}></i>
+              <h4 className="text-lg font-semibold mb-2">{feature.name}</h4>
+              <ul className="list-disc list-inside text-sm text-gray-700 dark:text-gray-300">
                 {feature.pros.map((pro, i) => (
                   <li key={i}>{pro}</li>
                 ))}
@@ -120,114 +119,67 @@ function Landing() {
           ))}
         </div>
       </section>
-      <div className="h-screen w-full pt-20 px-4">
-      <h3 className="text-3xl font-bold mb-8 text-center">Common Questions</h3>
-        <div className="mx-auto w-full max-w-3/4 backdrop-blur-2xl bg-gray-100/5 divide-y divide-black/30 dark:divide-white/5 border rounded-xl  dark:bg-white/5">
-          <Disclosure as="div" className="p-6" defaultOpen={true}>
-            <DisclosureButton className="group flex w-full items-center justify-between">
-              <span className="text-sm/6 font-medium group-data-[hover]:text-gray-900/80 dark:group-data-[hover]:text-white/80">
-                What exactly is BrainDump?
-              </span>
-              <i className="ri-arrow-drop-down-line text-2xl"></i>
-            </DisclosureButton>
-            <DisclosurePanel className="mt-2 text-sm/5 text-gray-900/80 dark:text-white/50">
-              It’s your brain’s messy desk — but digital. A minimalist personal
-              knowledge manager where you can jot down random thoughts, sketch
-              out ideas, and toss in tasks — all while keeping everything
-              connected like a spider web of context.
-            </DisclosurePanel>
-          </Disclosure>
-          <Disclosure as="div" className="p-6">
-            <DisclosureButton className="group flex w-full items-center justify-between">
-              <span className="text-sm/6 font-medium group-data-[hover]:text-gray-900/80 dark:group-data-[hover]:text-white/80">
-                How is BrainDump different from Notion, Obsidian, or Evernote?
-              </span>
-              <i className="ri-arrow-drop-down-line text-2xl"></i>
-            </DisclosureButton>
-            <DisclosurePanel className="mt-2 text-sm/5 text-gray-900/80 dark:text-white/50">
-              BrainDump is lighter than Obsidian, simpler than Notion, and more
-              flexible than Evernote. No folders, no pressure to organize. Just
-              dump stuff and link it — like how your brain does.
-            </DisclosurePanel>
-          </Disclosure>
-          <Disclosure as="div" className="p-6">
-            <DisclosureButton className="group flex w-full items-center justify-between">
-              <span className="text-sm/6 font-medium group-data-[hover]:text-gray-900/80 dark:group-data-[hover]:text-white/80">
-                Who is this for?
-              </span>
-              <i className="ri-arrow-drop-down-line text-2xl"></i>
-            </DisclosureButton>
-            <DisclosurePanel className="mt-2 text-sm/5 text-gray-900/80 dark:text-white/50">
-              Overthinkers, creators, ADHD brains, developers, writers —
-              basically anyone who hates rigid structure and loves just throwing
-              thoughts somewhere without feeling guilty for not organizing them.
-            </DisclosurePanel>
-          </Disclosure>
-          <Disclosure as="div" className="p-6">
-            <DisclosureButton className="group flex w-full items-center justify-between">
-              <span className="text-sm/6 font-medium group-data-[hover]:text-gray-900/80 dark:group-data-[hover]:text-white/80">
-                Is it free to use?
-              </span>
-              <i className="ri-arrow-drop-down-line text-2xl"></i>
-            </DisclosureButton>
-            <DisclosurePanel className="mt-2 text-sm/5 text-gray-900/80 dark:text-white/50">
-              Yep. It’s completely free and local-first. Data stays with you.
-              Supabase syncing (optional) is there if you want to go
-              cross-device.
-            </DisclosurePanel>
-          </Disclosure>
-          <Disclosure as="div" className="p-6">
-            <DisclosureButton className="group flex w-full items-center justify-between">
-              <span className="text-sm/6 font-medium group-data-[hover]:text-gray-900/80 dark:group-data-[hover]:text-white/80">
-                Can I use it offline?
-              </span>
-              <i className="ri-arrow-drop-down-line text-2xl"></i>
-            </DisclosureButton>
-            <DisclosurePanel className="mt-2 text-sm/5 text-gray-900/80 dark:text-white/50">
-              Hell yeah. Thoughts don't wait for wifi. You can use it in
-              airplane mode while avoiding human interaction at 35,000 feet.
-            </DisclosurePanel>
-          </Disclosure>
-          <Disclosure as="div" className="p-6">
-            <DisclosureButton className="group flex w-full items-center justify-between">
-              <span className="text-sm/6 font-medium group-data-[hover]:text-gray-900/80 dark:group-data-[hover]:text-white/80">
-                Will I lose my data if I clear my cache?
-              </span>
-              <i className="ri-arrow-drop-down-line text-2xl"></i>
-            </DisclosureButton>
-            <DisclosurePanel className="mt-2 text-sm/5 text-gray-900/80 dark:text-white/50">
-              If you're only using localStorage, then yeah, clearing your
-              browser data will nuke your dump. Use Supabase sync to avoid
-              accidental brain loss.
-            </DisclosurePanel>
-          </Disclosure>
-          <Disclosure as="div" className="p-6">
-            <DisclosureButton className="group flex w-full items-center justify-between">
-              <span className="text-sm/6 font-medium group-data-[hover]:text-gray-900/80 dark:group-data-[hover]:text-white/80">
-              Do I have to create an account?
-              </span>
-              <i className="ri-arrow-drop-down-line text-2xl"></i>
-            </DisclosureButton>
-            <DisclosurePanel className="mt-2 text-sm/5 text-gray-900/80 dark:text-white/50">
-            Not unless you want cloud sync. Without Supabase, it’s 100% anonymous and local.
-            </DisclosurePanel>
-          </Disclosure>
-        </div>
-      </div>
-      <footer className="mt-12 border-t border-gray-600 p-6 rounded-t-md text-center text-gray-500">
-        <p>© No rights reserved. Steal this idea and build it better, we dare you.</p>
-      <button
-              onClick={() => toggleDarkMode(!isDark)}
-              className="p-2 rounded-full hover:bg-purple-600 dark:hover:bg-purple-700 transition-colors"
-            >
-              {isDark ? (
-                <i className="ri-sun-line text-xl text-white"></i>
-              ) : (
-                <i className="ri-moon-line text-xl text-black"></i>
-              )}
-            </button>
-      </footer>
 
+      {/* FAQ */}
+      <section className="w-full px-6 max-w-screen-md mx-auto py-12">
+        <h3 className="text-2xl sm:text-3xl font-bold mb-8 text-center">
+          Common Questions
+        </h3>
+        <div className="divide-y border border-gray-300 dark:border-gray-700 rounded-xl backdrop-blur-xl bg-white/20 dark:bg-black/20">
+          {[
+            {
+              q: "What exactly is BrainDump?",
+              a: "It’s your brain’s messy desk — but digital. Minimalist personal knowledge manager where everything stays connected like a spider web.",
+            },
+            {
+              q: "How is BrainDump different from Notion, Obsidian, or Evernote?",
+              a: "Lighter than Obsidian, simpler than Notion, more flexible than Evernote. No folders, no pressure. Just dump stuff and link it.",
+            },
+            {
+              q: "Who is this for?",
+              a: "Overthinkers, creators, ADHD minds, devs, writers — anyone who hates structure and loves throwing stuff in without guilt.",
+            },
+            {
+              q: "Is it free to use?",
+              a: "Yep. Fully free and local-first. Supabase sync is optional for cross-device.",
+            },
+            {
+              q: "Can I use it offline?",
+              a: "Hell yeah. Works in airplane mode. Thoughts don't wait for Wi-Fi.",
+            },
+            {
+              q: "Will I lose my data if I clear my cache?",
+              a: "If using localStorage only — yes. Supabase sync prevents brain loss.",
+            },
+            {
+              q: "Do I have to create an account?",
+              a: "Nope. Totally anonymous unless you enable sync.",
+            },
+          ].map(({ q, a }, i) => (
+            <Disclosure key={i} as="div" className="p-4 sm:p-6">
+              <DisclosureButton className="flex justify-between w-full items-center">
+                <span className="font-medium text-base">{q}</span>
+                <i className="ri-arrow-drop-down-line text-2xl"></i>
+              </DisclosureButton>
+              <DisclosurePanel className="mt-2 text-sm text-gray-700 dark:text-gray-300">
+                {a}
+              </DisclosurePanel>
+            </Disclosure>
+          ))}
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="w-full text-center px-6 py-6 border-t border-gray-300 dark:border-gray-700 text-sm text-gray-500 dark:text-gray-400">
+        <p>© No rights reserved. Steal this idea and build it better, we dare you.</p>
+        <button
+          onClick={() => toggleDarkMode(!isDark)}
+          aria-label="Toggle dark mode"
+          className="mt-4 p-2 rounded-full hover:bg-purple-600 dark:hover:bg-purple-700 transition-colors"
+        >
+          <i className={`text-xl ${isDark ? "ri-sun-line text-white" : "ri-moon-line text-black"}`}></i>
+        </button>
+      </footer>
     </div>
   );
 }
