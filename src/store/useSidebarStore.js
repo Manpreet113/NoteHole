@@ -1,11 +1,18 @@
 import { create } from 'zustand';
 
-// Zustand store to manage the state of sidebar expansion
+// Zustand store to manage sidebar open/collapse state (for both desktop and mobile)
 const useSidebarStore = create((set) => ({
-  isExpanded: false, // Sidebar starts collapsed
-  toggleSidebar: () => set((state) => ({ isExpanded: !state.isExpanded })), // Toggle the sidebar state
-  expandSidebar: () => set({ isExpanded: true }), // Explicitly expand
-  collapseSidebar: () => set({ isExpanded: false }), // Explicitly collapse
+  isExpanded: false, // Default collapsed (especially for mobile)
+
+  // Toggles between open/close
+  toggleSidebar: () =>
+    set((state) => ({ isExpanded: !state.isExpanded })),
+
+  // Force open (can be used for desktop or nav buttons)
+  expandSidebar: () => set({ isExpanded: true }),
+
+  // Force collapse (especially useful on mobile or after navigation)
+  collapseSidebar: () => set({ isExpanded: false }),
 }));
 
 export default useSidebarStore;
