@@ -1,5 +1,5 @@
 import { Dialog } from '@headlessui/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import useModalStore from '../store/useModalStore';
 import useSearchStore from '../store/useSearchStore';
 import { useNavigate } from 'react-router-dom';
@@ -12,11 +12,11 @@ export default function SearchModal() {
   const [results, setResults] = useState([]);
   const navigate = useNavigate();
 
-  const fuse = new Fuse(combinedData, {
+  const fuse = useMemo(() => new Fuse(combinedData, {
     keys: ['title', 'content'],
     threshold: 0.3,
     includeScore: true,
-  });
+  }), [combinedData]);
 
   useEffect(() => {
     if (!query) {
@@ -25,7 +25,7 @@ export default function SearchModal() {
       const res = fuse.search(query).map(r => r.item);
       setResults(res);
     }
-  }, [query]);
+  }, [query, fuse]);
 
   const handleNavigate = (item) => {
     setShowSearch(false);
