@@ -1,3 +1,5 @@
+// Landing.jsx
+// Landing page for BrainDump: hero, features, FAQ, and theme toggle
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import {
@@ -7,6 +9,7 @@ import {
 } from "@headlessui/react";
 import useDarkModeStore from "../store/useDarkModeStore";
 
+// List of core features for display
 const features = [
   {
     name: "Note Dump",
@@ -26,9 +29,12 @@ const features = [
 ];
 
 function Landing() {
+  // Theme state from global store
   const { isDark, toggleDarkMode } = useDarkModeStore();
+  // Mouse position for animated background
   const [pos, setPos] = useState({ x: 0, y: 0 });
 
+  // Track mouse position for radial gradient
   useEffect(() => {
     let animationFrameId;
     const handleMouseMove = (e) => {
@@ -56,7 +62,7 @@ function Landing() {
         }}
       />
 
-      {/* Header */}
+      {/* Header with theme toggle and login */}
       <header className="w-full fixed top-0 z-30">
         <div className="container mx-auto px-4 py-3 flex justify-between items-center backdrop-blur-md bg-white/30 dark:bg-black/30 rounded-b-xl shadow-md">
           <h1
@@ -82,7 +88,7 @@ function Landing() {
         </div>
       </header>
 
-      {/* Hero */}
+      {/* Hero section */}
       <main className="flex flex-col items-center justify-center text-center px-6 pt-32 sm:pt-40 lg:pt-48 pb-12 max-w-screen-md mx-auto">
         <h2 className="text-3xl sm:text-5xl font-bold mb-4 leading-tight">
           Declutter your mind, one dump at a time.
@@ -97,7 +103,7 @@ function Landing() {
         </Link>
       </main>
 
-      {/* Features */}
+      {/* Features grid */}
       <section className="w-full max-w-screen-xl px-6 py-12">
         <h3 className="text-2xl sm:text-3xl font-bold mb-8 text-center">
           Core Features
@@ -120,7 +126,7 @@ function Landing() {
         </div>
       </section>
 
-      {/* FAQ */}
+      {/* FAQ accordion */}
       <section className="w-full px-6 max-w-screen-md mx-auto py-12">
         <h3 className="text-2xl sm:text-3xl font-bold mb-8 text-center">
           Common Questions
@@ -129,7 +135,7 @@ function Landing() {
           {[
             {
               q: "What exactly is BrainDump?",
-              a: "It’s your brain’s messy desk — but digital. Minimalist personal knowledge manager where everything stays connected like a spider web.",
+              a: "It's your brain's messy desk — but digital. Minimalist personal knowledge manager where everything stays connected like a spider web.",
             },
             {
               q: "How is BrainDump different from Notion, Obsidian, or Evernote?",
@@ -169,7 +175,7 @@ function Landing() {
         </div>
       </section>
 
-      {/* Footer */}
+      {/* Footer with theme toggle */}
       <footer className="w-full text-center px-6 py-6 border-t border-gray-300 dark:border-gray-700 text-sm text-gray-500 dark:text-gray-400">
         <p>© No rights reserved. Steal this idea and build it better, we dare you.</p>
         <button

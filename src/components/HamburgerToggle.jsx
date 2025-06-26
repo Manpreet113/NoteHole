@@ -1,7 +1,10 @@
+// HamburgerToggle.jsx
+// Animated hamburger menu button for toggling sidebar (mobile)
 import { motion } from 'framer-motion';
 
 function HamburgerToggle({ isOpen, toggle }) {
   return (
+    // Hamburger button
     <button
       onClick={toggle}
       className="sm:hidden p-2 z-50 fixed top-3 left-3 rounded-md bg-purple-600 hover:bg-purple-700 transition-colors"

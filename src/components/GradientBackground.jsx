@@ -1,10 +1,14 @@
+// GradientBackground.jsx
+// Animated radial gradient background that follows mouse position
 import { useState, useEffect } from "react";
 
 export default function GradientBackground() {
+  // Track mouse position for gradient center
   const [pos, setPos] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     let animationFrameId;
+    // Update position on mouse move (throttled with requestAnimationFrame)
     const handleMouseMove = (e) => {
       if (animationFrameId) cancelAnimationFrame(animationFrameId);
       animationFrameId = requestAnimationFrame(() => {
@@ -19,6 +23,7 @@ export default function GradientBackground() {
   }, []);
 
   return (
+    // Full-screen animated gradient background
     <div
       className="pointer-events-none fixed top-0 left-0 w-full h-full z-0"
       style={{

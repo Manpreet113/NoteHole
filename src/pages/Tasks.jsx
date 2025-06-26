@@ -1,8 +1,11 @@
+// Tasks.jsx
+// Task manager page: create, complete, delete, and filter tasks (localStorage persistence)
 import { useState, useEffect } from 'react';
 import { parseText } from '../utils/parseText';
 import FloatingButton from '../components/FloatingButton';
 
 function Tasks() {
+  // State for tasks list, new task input, filter, and search
   const [tasks, setTasks] = useState(() => {
     const saved = localStorage.getItem('tasks');
     return saved ? JSON.parse(saved) : [];
@@ -11,10 +14,12 @@ function Tasks() {
   const [filter, setFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Persist tasks to localStorage on change
   useEffect(() => {
     localStorage.setItem('tasks', JSON.stringify(tasks));
   }, [tasks]);
 
+  // Filter tasks by search and completion status
   const filtered = tasks
     .filter((t) =>
       t.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -25,6 +30,7 @@ function Tasks() {
       return true;
     });
 
+  // Add a new task
   const addTask = () => {
     if (!newTask.trim()) return;
     const task = {
@@ -37,6 +43,7 @@ function Tasks() {
     setNewTask('');
   };
 
+  // Toggle task completion
   const toggleTask = (id) => {
     setTasks(
       tasks.map((t) =>
@@ -45,6 +52,7 @@ function Tasks() {
     );
   };
 
+  // Delete a task
   const deleteTask = (id) => {
     setTasks(tasks.filter((t) => t.id !== id));
   };
@@ -53,6 +61,7 @@ function Tasks() {
     <div>
       <h1 className="text-4xl font-bold mb-6">Task Manager</h1>
 
+      {/* New task input */}
       <input
         type="text"
         value={newTask}
@@ -61,6 +70,7 @@ function Tasks() {
         placeholder="Add a task... (e.g., @idea:dark-mode)"
       />
 
+      {/* Filter buttons */}
       <div className="my-6 flex gap-4">
         {['all', 'pending', 'completed'].map((type) => (
           <button
@@ -77,6 +87,7 @@ function Tasks() {
         ))}
       </div>
 
+      {/* Task list */}
       <ul className="space-y-3">
         {filtered.map((task) => (
           <li
@@ -113,6 +124,7 @@ function Tasks() {
         ))}
       </ul>
 
+      {/* Floating add button */}
       <FloatingButton onClick={addTask} icon="+" label="Add Task" />
     </div>
   );

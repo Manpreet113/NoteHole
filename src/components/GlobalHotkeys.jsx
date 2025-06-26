@@ -1,7 +1,10 @@
+// GlobalHotkeys.jsx
+// Provides global keyboard shortcuts for the app using react-hotkeys
 import { GlobalHotKeys } from 'react-hotkeys';
 import toast from 'react-hot-toast';
 import useModalStore from '../store/useModalStore';
 
+// Mapping of action names to keyboard shortcuts
 const keyMap = {
   SHOW_SEARCH: 'ctrl+k',
   CREATE_TASK: 'ctrl+shift+t',
@@ -11,18 +14,21 @@ const keyMap = {
 };
 
 export default function GlobalHotkeys() {
+  // Modal state setters from global store
   const {
     setShowSearch,
     setShowCheatsheet,
   } = useModalStore();
 
+  // Handlers for each shortcut action
   const handlers = {
-    SHOW_SEARCH: () => setShowSearch(true),
-    CREATE_TASK: () => toast("📝 Create Task"),
-    CREATE_IDEA: () => toast("💡 Create Idea"),
-    CREATE_THOUGHT: () => toast("🧠 Create Thought"),
-    SHOW_CHEATSHEET: () => setShowCheatsheet(true),
+    SHOW_SEARCH: () => setShowSearch(true), // Open search modal
+    CREATE_TASK: () => toast("📝 Create Task"), // Show toast for task creation
+    CREATE_IDEA: () => toast("💡 Create Idea"), // Show toast for idea creation
+    CREATE_THOUGHT: () => toast("🧠 Create Thought"), // Show toast for thought creation
+    SHOW_CHEATSHEET: () => setShowCheatsheet(true), // Open shortcuts cheatsheet
   };
 
+  // Attach global hotkeys to the app
   return <GlobalHotKeys keyMap={keyMap} handlers={handlers} />;
 }

@@ -1,3 +1,5 @@
+// Ideas.jsx
+// Ideas board page: create, edit, delete, and search ideas (localStorage persistence)
 import { useState, useEffect } from 'react';
 import { parseText } from '../utils/parseText';
 import useSearchStore from '../store/useSearchStore';
@@ -5,6 +7,7 @@ import Fuse from 'fuse.js';
 import FloatingButton from '../components/FloatingButton';
 
 function Ideas() {
+  // State for ideas list, new idea input, and editing
   const [ideas, setIdeas] = useState(() => {
     const saved = localStorage.getItem('ideas');
     return saved ? JSON.parse(saved) : [];
@@ -15,12 +18,15 @@ function Ideas() {
   const [editTitle, setEditTitle] = useState('');
   const [editDesc, setEditDesc] = useState('');
 
+  // Global search query from store
   const { searchQuery } = useSearchStore();
 
+  // Persist ideas to localStorage on change
   useEffect(() => {
     localStorage.setItem('ideas', JSON.stringify(ideas));
   }, [ideas]);
 
+  // Add a new idea
   const addIdea = () => {
     if (!newTitle.trim()) return;
     const idea = {
@@ -34,6 +40,7 @@ function Ideas() {
     setNewDesc('');
   };
 
+  // Save edits to an idea
   const saveEdit = (id) => {
     setIdeas(
       ideas.map((idea) =>
@@ -47,11 +54,13 @@ function Ideas() {
     setEditDesc('');
   };
 
+  // Fuzzy search for ideas
   const fuse = new Fuse(ideas, {
     keys: ['title', 'description'],
     threshold: 0.3,
   });
 
+  // Filtered ideas based on search query
   const filtered =
     searchQuery.trim() === ''
       ? ideas
@@ -61,6 +70,7 @@ function Ideas() {
     <div>
       <h1 className="text-4xl font-bold mb-6">Ideas Board</h1>
 
+      {/* New idea input */}
       <input
         type="text"
         value={newTitle}
@@ -77,6 +87,7 @@ function Ideas() {
         rows="3"
       />
 
+      {/* Ideas grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
         {filtered.map((idea) => (
           <div
@@ -85,6 +96,7 @@ function Ideas() {
           >
             {editingId === idea.id ? (
               <div className="space-y-2">
+                {/* Edit idea form */}
                 <input
                   type="text"
                   value={editTitle}
@@ -145,6 +157,7 @@ function Ideas() {
         ))}
       </div>
 
+      {/* Floating add button */}
       <FloatingButton onClick={addIdea} icon="+" label="Add Idea" />
     </div>
   );

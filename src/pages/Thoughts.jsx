@@ -1,3 +1,5 @@
+// Thoughts.jsx
+// Thoughts dump page: create, edit, delete, and search thoughts (localStorage persistence)
 import { useState, useEffect } from 'react';
 import { parseText } from '../utils/parseText';
 import useSearchStore from '../store/useSearchStore';
@@ -5,6 +7,7 @@ import Fuse from 'fuse.js';
 import FloatingButton from '../components/FloatingButton';
 
 function Thoughts() {
+  // State for thoughts list, new thought input, and editing
   const [thoughts, setThoughts] = useState(() => {
     const saved = localStorage.getItem('thoughts');
     return saved ? JSON.parse(saved) : [];
@@ -13,12 +16,15 @@ function Thoughts() {
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState('');
 
+  // Global search query from store
   const { searchQuery } = useSearchStore();
 
+  // Persist thoughts to localStorage on change
   useEffect(() => {
     localStorage.setItem('thoughts', JSON.stringify(thoughts));
   }, [thoughts]);
 
+  // Add a new thought
   const addThought = () => {
     if (!newThought.trim()) return;
     const newT = {
@@ -30,6 +36,7 @@ function Thoughts() {
     setNewThought('');
   };
 
+  // Save edits to a thought
   const saveEdit = (id) => {
     setThoughts(
       thoughts.map((t) => (t.id === id ? { ...t, text: editText } : t))
@@ -38,6 +45,7 @@ function Thoughts() {
     setEditText('');
   };
 
+  // Fuzzy search for thoughts
   const fuse = new Fuse(thoughts, { keys: ['text'], threshold: 0.3 });
   const filtered = searchQuery.trim()
     ? fuse.search(searchQuery).map((r) => r.item)
@@ -47,6 +55,7 @@ function Thoughts() {
     <div>
       <h1 className="text-4xl font-bold mb-6">Thoughts Dump Zone</h1>
 
+      {/* New thought input */}
       <input
         type="text"
         value={newThought}
@@ -55,6 +64,7 @@ function Thoughts() {
         placeholder="Dump a thought... (e.g., @idea:dark-mode)"
       />
 
+      {/* Thoughts list */}
       <ul className="space-y-4 mt-6">
         {filtered.map((thought) => (
           <li
@@ -63,6 +73,7 @@ function Thoughts() {
           >
             {editingId === thought.id ? (
               <div className="flex w-full space-x-2">
+                {/* Edit thought form */}
                 <input
                   type="text"
                   value={editText}
@@ -109,6 +120,7 @@ function Thoughts() {
         ))}
       </ul>
 
+      {/* Floating add button */}
       <FloatingButton onClick={addThought} label="Add Thought" icon="+" />
     </div>
   );

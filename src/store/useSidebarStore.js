@@ -1,7 +1,9 @@
+// useSidebarStore.js
+// Zustand store to manage sidebar open/collapse state (for both desktop and mobile)
 import { create } from 'zustand';
 
-// Zustand store to manage sidebar open/collapse state (for both desktop and mobile)
 const useSidebarStore = create((set) => ({
+  // Sidebar expanded/collapsed state
   isExpanded: false, // Default collapsed (especially for mobile)
 
   // Toggles between open/close

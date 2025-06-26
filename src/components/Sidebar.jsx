@@ -1,3 +1,5 @@
+// Sidebar.jsx
+// Sidebar navigation for main app sections, with theme toggle and login (responsive)
 import { Link, useLocation } from 'react-router-dom';
 import {
   Lightbulb,
@@ -15,10 +17,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 function SideBar() {
   const location = useLocation();
+  // Sidebar and theme state from global store
   const { isExpanded, collapseSidebar } = useSidebarStore();
   const { isDark, toggleDarkMode } = useDarkModeStore();
+  // Local state for tiny screens
   const [isTinyScreen, setIsTinyScreen] = useState(false);
 
+  // Navigation links for sidebar
   const links = [
     {
       path: '/thoughts',
@@ -40,6 +45,7 @@ function SideBar() {
     },
   ];
 
+  // Detect tiny screens for responsive UI
   useEffect(() => {
     const handleResize = () => {
       setIsTinyScreen(window.innerWidth < 400);
@@ -49,6 +55,7 @@ function SideBar() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Sidebar content (links, theme toggle, login)
   const SidebarContent = () => (
     <div className="flex flex-col gap-6">
       {links.map(({ path, label, Icon, activeColor }) => (
@@ -73,6 +80,7 @@ function SideBar() {
         </Link>
       ))}
 
+      {/* Extra controls for mobile sidebar */}
       {isTinyScreen && (
   <div className="mt-4 border-t border-white/10 pt-4 space-y-4">
     {/* 🌙 Theme toggle */}
