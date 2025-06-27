@@ -8,6 +8,7 @@ import {
   DisclosurePanel,
 } from "@headlessui/react";
 import useDarkModeStore from "../store/useDarkModeStore";
+import useAuthStore from '../store/useAuthStore';
 
 // List of core features for display
 const features = [
@@ -33,6 +34,8 @@ function Landing() {
   const { isDark, toggleDarkMode } = useDarkModeStore();
   // Mouse position for animated background
   const [pos, setPos] = useState({ x: 0, y: 0 });
+  const { user, signOut } = useAuthStore();
+  const [showMenu, setShowMenu] = useState(false);
 
   // Track mouse position for radial gradient
   useEffect(() => {
@@ -62,7 +65,7 @@ function Landing() {
         }}
       />
 
-      {/* Header with theme toggle and login */}
+      {/* Header with theme toggle and login/avatar */}
       <header className="w-full fixed top-0 z-30">
         <div className="container mx-auto px-4 py-3 flex justify-between items-center backdrop-blur-md bg-white/30 dark:bg-black/30 rounded-b-xl shadow-md">
           <h1
@@ -71,7 +74,7 @@ function Landing() {
           >
             BrainDump
           </h1>
-          <div className="flex items-center gap-2 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 relative">
             <button
               onClick={() => toggleDarkMode(!isDark)}
               aria-label="Toggle dark mode"
@@ -79,11 +82,49 @@ function Landing() {
             >
               <i className={`text-xl ${isDark ? "ri-sun-line" : "ri-moon-line"}`}></i>
             </button>
-            <Link to="/login">
-              <button className="bg-purple-600 text-white px-4 py-2 rounded-full hover:bg-purple-700 transition duration-200">
-                Log In
-              </button>
-            </Link>
+            {user ? (
+              <div className="relative">
+                <button
+                  onClick={() => setShowMenu((v) => !v)}
+                  className="w-9 h-9 bg-purple-600 dark:bg-purple-700 rounded-full flex items-center justify-center text-white hover:bg-purple-800 transition cursor-pointer focus:outline-none"
+                  aria-label="User menu"
+                >
+                  {user.user_metadata?.avatar_url ? (
+                    <img
+                      src={user.user_metadata.avatar_url}
+                      alt="avatar"
+                      className="w-9 h-9 rounded-full object-cover"
+                    />
+                  ) : (
+                    <span className="font-bold text-lg">
+                      {user.user_metadata?.full_name
+                        ? user.user_metadata.full_name.split(' ').map((n) => n[0]).join('').slice(0,2).toUpperCase()
+                        : <i className="ri-user-line" />}
+                    </span>
+                  )}
+                </button>
+                {/* Dropdown menu */}
+                {showMenu && (
+                  <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
+                    <div className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200 border-b border-gray-100 dark:border-gray-800">
+                      {user.user_metadata?.full_name || user.email}
+                    </div>
+                    <button
+                      onClick={() => { signOut(); setShowMenu(false); }}
+                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-b-lg"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link to="/login">
+                <button className="bg-purple-600 text-white px-4 py-2 rounded-full hover:bg-purple-700 transition duration-200">
+                  Log In
+                </button>
+              </Link>
+            )}
           </div>
         </div>
       </header>

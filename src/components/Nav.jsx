@@ -7,6 +7,7 @@ import useSidebarStore from '../store/useSidebarStore';
 import useDarkModeStore from '../store/useDarkModeStore';
 import { motion } from 'framer-motion';
 import { link } from 'framer-motion/m';
+import useAuthStore from '../store/useAuthStore';
 
 function Nav() {
   // Global state for theme, search, and sidebar
@@ -14,9 +15,12 @@ function Nav() {
   const { searchQuery, setSearchQuery } = useSearchStore();
   const { isExpanded, toggleSidebar } = useSidebarStore();
   const location = useLocation();
+  const { user, signOut } = useAuthStore();
 
   // Local state for tiny screens
   const [isTinyScreen, setIsTinyScreen] = useState(false);
+  // Dropdown state for avatar menu
+  const [showMenu, setShowMenu] = useState(false);
 
   // Clear search query on route change
   useEffect(() => {
@@ -111,9 +115,9 @@ function Nav() {
           </div>
         </div>
 
-        {/* 🌙 Theme toggle + 👤 Avatar (hidden on tiny) */}
+        {/* 🌙 Theme toggle + 👤 Avatar/Login (hidden on tiny) */}
         {!isTinyScreen && (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 relative">
             {/* Theme toggle button */}
             <button
               onClick={() => toggleDarkMode(!isDark)}
@@ -126,13 +130,50 @@ function Nav() {
                 <i className="ri-moon-line text-xl" />
               )}
             </button>
-
-            {/* Login avatar button */}
-            <Link to="/login" aria-label="Login">
-              <div className="w-9 h-9 bg-purple-600 dark:bg-purple-700 rounded-full flex items-center justify-center text-white hover:bg-purple-800 transition cursor-pointer">
-                <i className="ri-user-line" />
+            {/* User avatar or login button */}
+            {user ? (
+              <div className="relative">
+                <button
+                  onClick={() => setShowMenu((v) => !v)}
+                  className="w-9 h-9 bg-purple-600 dark:bg-purple-700 rounded-full flex items-center justify-center text-white hover:bg-purple-800 transition cursor-pointer focus:outline-none"
+                  aria-label="User menu"
+                >
+                  {user.user_metadata?.avatar_url ? (
+                    <img
+                      src={user.user_metadata.avatar_url}
+                      alt="avatar"
+                      className="w-9 h-9 rounded-full object-cover"
+                    />
+                  ) : (
+                    <span className="font-bold text-lg">
+                      {user.user_metadata?.full_name
+                        ? user.user_metadata.full_name.split(' ').map((n) => n[0]).join('').slice(0,2).toUpperCase()
+                        : <i className="ri-user-line" />}
+                    </span>
+                  )}
+                </button>
+                {/* Dropdown menu */}
+                {showMenu && (
+                  <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
+                    <div className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200 border-b border-gray-100 dark:border-gray-800">
+                      {user.user_metadata?.full_name || user.email}
+                    </div>
+                    <button
+                      onClick={() => { signOut(); setShowMenu(false); }}
+                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-b-lg"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
               </div>
-            </Link>
+            ) : (
+              <Link to="/login" aria-label="Login">
+                <div className="w-9 h-9 bg-purple-600 dark:bg-purple-700 rounded-full flex items-center justify-center text-white hover:bg-purple-800 transition cursor-pointer">
+                  <i className="ri-user-line" />
+                </div>
+              </Link>
+            )}
           </div>
         )}
       </div>
