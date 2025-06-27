@@ -1,7 +1,7 @@
 // Login.jsx
 // Login and signup form with email/password and OAuth using Supabase
 import { useState } from 'react'
-import { supabase } from './supabaseClient'
+import useAuthStore from '../store/useAuthStore'
 
 export default function LoginForm() {
   // Email & Password States
@@ -11,24 +11,21 @@ export default function LoginForm() {
   // UI Control States
   const [step, setStep] = useState('email') // email → password/signup
   const [authMode, setAuthMode] = useState('login') // login or signup
-  const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [emailExists, setEmailExists] = useState(null)
   const [showPassword, setShowPassword] = useState(false)
 
+  // Auth store from zustand
+  const { signIn, signUp, signInWithOAuth, loading } = useAuthStore();
+
   // Check if email is already registered
   const handleEmailCheck = async () => {
-    setLoading(true)
     setError('')
     try {
       // Try to sign in with a random password to check if user exists
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password: 'random_placeholder'
-      })
-
+      const { error } = await signIn({ email, password: 'random_placeholder' })
       // If invalid credentials, user exists
-      if (error && error.message.includes('Invalid login credentials')) {
+      if (error && error.includes('Invalid login credentials')) {
         setEmailExists(true)
         setAuthMode('login')
         setStep('password')
@@ -44,52 +41,41 @@ export default function LoginForm() {
       }
     } catch (err) {
       setError('Something went wrong. Please try again later.')
-    } finally {
-      setLoading(false)
     }
   }
 
   // Log the user in
   const handleLogin = async () => {
-    setLoading(true)
     setError('')
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) throw error
+      const { error } = await signIn({ email, password })
+      if (error) throw new Error(error)
       // ✅ Login successful
     } catch (err) {
       setError(err.message || 'Login failed.')
-    } finally {
-      setLoading(false)
     }
   }
 
   // Sign up new user
   const handleSignup = async () => {
-    setLoading(true)
     setError('')
     try {
-      const { error } = await supabase.auth.signUp({ email, password })
-      if (error) throw error
+      const { error } = await signUp({ email, password })
+      if (error) throw new Error(error)
       // ✅ Signup successful (might still need email confirmation)
     } catch (err) {
       setError(err.message || 'Signup failed.')
-    } finally {
-      setLoading(false)
     }
   }
 
   // Sign in with OAuth (Google, GitHub, etc.)
-  const signInWithOAuth = async (provider) => {
-    setLoading(true)
+  const handleOAuth = async (provider) => {
     setError('')
     try {
-      const { error } = await supabase.auth.signInWithOAuth({ provider })
-      if (error) throw error
+      const { error } = await signInWithOAuth(provider)
+      if (error) throw new Error(error)
     } catch (err) {
       setError(err.message || 'OAuth login failed.')
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -202,7 +188,7 @@ export default function LoginForm() {
         <div className="space-y-4 text-sm font-medium">
           {/* Google OAuth */}
           <button
-            onClick={() => signInWithOAuth('google')}
+            onClick={() => handleOAuth('google')}
             className="w-full font-bold flex items-center justify-center gap-x-3 py-2.5 border rounded-lg hover:bg-gray-50 active:bg-gray-100"
           >
             <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-5 h-5" alt="google" />
@@ -211,7 +197,7 @@ export default function LoginForm() {
 
           {/* GitHub OAuth */}
           <button
-            onClick={() => signInWithOAuth('github')}
+            onClick={() => handleOAuth('github')}
             className="w-full flex font-bold items-center justify-center gap-x-3 py-2.5 border rounded-lg hover:bg-gray-50 active:bg-gray-100"
           >
             <img src="https://www.svgrepo.com/show/512317/github-142.svg" className="w-5 h-5" alt="github" />
