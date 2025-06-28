@@ -7,9 +7,15 @@ const useSearchStore = create((set) => ({
   searchQuery: '',
   setSearchQuery: (query) => set({ searchQuery: query }),
 
-  // Combined data from all sources (tasks, thoughts, ideas)
-  combinedData: [], // merged list of tasks/thoughts/ideas
-  setCombinedData: (data) => set({ combinedData: data }),
+  // Individual page data
+  ideas: [],
+  tasks: [],
+  thoughts: [],
+
+  // Actions to update individual page data
+  setIdeas: (ideas) => set({ ideas }),
+  setTasks: (tasks) => set({ tasks }),
+  setThoughts: (thoughts) => set({ thoughts }),
 }));
 
 export default useSearchStore;

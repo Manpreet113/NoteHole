@@ -4,8 +4,10 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { parseText } from '../utils/parseText';
 import FloatingButton from '../components/FloatingButton';
 import useAuthStore from '../store/useAuthStore';
+import useSearchStore from '../store/useSearchStore';
 import { supabase } from '../components/supabaseClient';
 import toast from 'react-hot-toast';
+import Fuse from 'fuse.js';
 
 // Supabase helpers
 async function fetchTasks(userId) {
@@ -47,49 +49,72 @@ async function deleteTaskFromSupabase(id, userId) {
 }
 
 function Tasks() {
-  const { user } = useAuthStore();
+  const { user, loading: authLoading } = useAuthStore();
   const userId = user?.id;
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState('');
   const [filter, setFilter] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState('');
   const [loadingFetch, setLoadingFetch] = useState(false);
   const [loadingAction, setLoadingAction] = useState(false);
   const editInputRef = useRef(null);
 
+  // Global search query from store
+  const { searchQuery, setTasks: setSearchTasks } = useSearchStore();
+
   // Load tasks from Supabase or localStorage on mount or login/logout
   useEffect(() => {
+    if (authLoading) {
+      console.log('Auth still loading, skipping task load');
+      return;
+    }
+    
     const loadTasks = async () => {
       setLoadingFetch(true);
+      console.log('Loading tasks - userId:', userId);
       if (userId) {
         try {
           const data = await fetchTasks(userId);
+          console.log('Loaded tasks from Supabase:', data);
           setTasks(data || []);
         } catch (e) {
+          console.error('Failed to fetch tasks from Supabase:', e);
           setTasks([]);
           toast.error('Failed to fetch tasks from Supabase');
         }
       } else {
         const saved = localStorage.getItem('tasks');
+        console.log('Loading tasks from localStorage:', saved);
         setTasks(saved ? JSON.parse(saved) : []);
       }
       setLoadingFetch(false);
     };
     loadTasks();
-  }, [userId]);
+  }, [userId, authLoading]);
+
+  // Sync tasks with search store whenever tasks change
+  useEffect(() => {
+    setSearchTasks(tasks);
+  }, [tasks, setSearchTasks]);
 
   // Persist to localStorage if not logged in
   useEffect(() => {
-    if (!userId) {
+    console.log('Tasks useEffect - userId:', userId, 'authLoading:', authLoading, 'tasks count:', tasks.length);
+    if (!authLoading && !userId) {
+      console.log('Saving tasks to localStorage:', tasks);
       localStorage.setItem('tasks', JSON.stringify(tasks));
+    } else if (authLoading) {
+      console.log('Auth still loading, skipping localStorage save');
+    } else {
+      console.log('User is logged in, not saving to localStorage');
     }
-  }, [tasks, userId]);
+  }, [tasks, userId, authLoading]);
 
   // Add a new task
   const addTask = async () => {
     if (!newTask.trim()) return;
+    console.log('Adding task - userId:', userId, 'task:', newTask);
     setLoadingAction(true);
     const task = {
       id: crypto.randomUUID(),
@@ -100,12 +125,15 @@ function Tasks() {
     if (userId) {
       try {
         const saved = await addTaskToSupabase(task, userId);
+        console.log('Saved task to Supabase:', saved);
         setTasks([saved, ...tasks]);
         toast.success('Task added!');
       } catch (e) {
+        console.error('Failed to add task to Supabase:', e);
         toast.error('Failed to add task');
       }
     } else {
+      console.log('Adding task locally:', task);
       setTasks([task, ...tasks]);
       toast.success('Task added locally!');
     }
@@ -189,7 +217,7 @@ function Tasks() {
 
   // Memoized Fuse instance
   const fuse = useMemo(() => {
-    return new (require('fuse.js'))(tasks, {
+    return new Fuse(tasks, {
       keys: ['name'],
       threshold: 0.3,
     });
@@ -214,6 +242,12 @@ function Tasks() {
         type="text"
         value={newTask}
         onChange={(e) => setNewTask(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            addTask();
+          }
+        }}
         className="w-full px-4 py-2 bg-white/5 border border-purple-400/40 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-purple-500"
         placeholder="Add a task... (e.g., @idea:dark-mode)"
         disabled={loadingAction}
@@ -249,6 +283,12 @@ function Tasks() {
                   type="text"
                   value={editText}
                   onChange={(e) => setEditText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      saveEdit(task.id);
+                    }
+                  }}
                   className="flex-1 p-2 bg-purple-100 dark:bg-purple-800 text-black dark:text-white rounded"
                   disabled={loadingAction}
                 />

@@ -49,7 +49,7 @@ async function deleteIdeaFromSupabase(id, userId) {
 }
 
 function Ideas() {
-  const { user } = useAuthStore();
+  const { user, loading: authLoading } = useAuthStore();
   const userId = user?.id;
   const [ideas, setIdeas] = useState([]);
   const [newTitle, setNewTitle] = useState('');
@@ -62,39 +62,60 @@ function Ideas() {
   const editTitleRef = useRef(null);
 
   // Global search query from store
-  const { searchQuery } = useSearchStore();
+  const { searchQuery, setIdeas: setSearchIdeas } = useSearchStore();
 
   // Load ideas from Supabase or localStorage on mount or login/logout
   useEffect(() => {
+    if (authLoading) {
+      console.log('Auth still loading, skipping ideas load');
+      return;
+    }
+    
     const loadIdeas = async () => {
       setLoadingFetch(true);
+      console.log('Loading ideas - userId:', userId);
       if (userId) {
         try {
           const data = await fetchIdeas(userId);
+          console.log('Loaded ideas from Supabase:', data);
           setIdeas(data || []);
         } catch (e) {
+          console.error('Failed to fetch ideas from Supabase:', e);
           setIdeas([]);
           toast.error('Failed to fetch ideas from Supabase');
         }
       } else {
         const saved = localStorage.getItem('ideas');
+        console.log('Loading ideas from localStorage:', saved);
         setIdeas(saved ? JSON.parse(saved) : []);
       }
       setLoadingFetch(false);
     };
     loadIdeas();
-  }, [userId]);
+  }, [userId, authLoading]);
+
+  // Sync ideas with search store whenever ideas change
+  useEffect(() => {
+    setSearchIdeas(ideas);
+  }, [ideas, setSearchIdeas]);
 
   // Persist to localStorage if not logged in
   useEffect(() => {
-    if (!userId) {
+    console.log('Ideas useEffect - userId:', userId, 'authLoading:', authLoading, 'ideas count:', ideas.length);
+    if (!authLoading && !userId) {
+      console.log('Saving ideas to localStorage:', ideas);
       localStorage.setItem('ideas', JSON.stringify(ideas));
+    } else if (authLoading) {
+      console.log('Auth still loading, skipping localStorage save');
+    } else {
+      console.log('User is logged in, not saving to localStorage');
     }
-  }, [ideas, userId]);
+  }, [ideas, userId, authLoading]);
 
   // Add a new idea
   const addIdea = async () => {
     if (!newTitle.trim()) return;
+    console.log('Adding idea - userId:', userId, 'title:', newTitle);
     setLoadingAction(true);
     const idea = {
       id: crypto.randomUUID(),
@@ -105,12 +126,15 @@ function Ideas() {
     if (userId) {
       try {
         const saved = await addIdeaToSupabase(idea, userId);
+        console.log('Saved idea to Supabase:', saved);
         setIdeas([saved, ...ideas]);
         toast.success('Idea added!');
       } catch (e) {
+        console.error('Failed to add idea to Supabase:', e);
         toast.error('Failed to add idea');
       }
     } else {
+      console.log('Adding idea locally:', idea);
       setIdeas([idea, ...ideas]);
       toast.success('Idea added locally!');
     }
@@ -189,12 +213,26 @@ function Ideas() {
   return (
     <div>
       <h1 className="text-4xl font-bold mb-6">Ideas Board</h1>
+      
+      {/* Debug info */}
+      <div className="mb-4 p-2 bg-yellow-100 dark:bg-yellow-900 text-xs text-black dark:text-white rounded">
+        <strong>Debug:</strong> User ID: {userId || 'null'} | 
+        Ideas count: {ideas.length} | 
+        localStorage: {localStorage.getItem('ideas') ? 'has data' : 'empty'}
+      </div>
+      
       {(loadingFetch || loadingAction) && <div className="text-center text-gray-500 mb-4">{loadingFetch ? 'Loading...' : 'Saving...'}</div>}
       {/* New idea input */}
       <input
         type="text"
         value={newTitle}
         onChange={(e) => setNewTitle(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            addIdea();
+          }
+        }}
         className="w-full px-4 py-2 bg-white/5 border border-purple-400/40 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-purple-500 mb-4"
         placeholder="Idea Title"
         disabled={loadingAction}
@@ -202,8 +240,14 @@ function Ideas() {
       <textarea
         value={newDesc}
         onChange={(e) => setNewDesc(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && e.ctrlKey) {
+            e.preventDefault();
+            addIdea();
+          }
+        }}
         className="w-full px-4 py-2 bg-white/5 border border-purple-400/40 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-        placeholder="Description..."
+        placeholder="Description... (Ctrl+Enter to save)"
         rows="3"
         disabled={loadingAction}
       />
@@ -222,12 +266,24 @@ function Ideas() {
                   type="text"
                   value={editTitle}
                   onChange={(e) => setEditTitle(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      saveEdit(idea.id);
+                    }
+                  }}
                   className="w-full p-2 bg-purple-100 dark:bg-purple-800 text-black dark:text-white rounded"
                   disabled={loadingAction}
                 />
                 <textarea
                   value={editDesc}
                   onChange={(e) => setEditDesc(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && e.ctrlKey) {
+                      e.preventDefault();
+                      saveEdit(idea.id);
+                    }
+                  }}
                   className="w-full p-2 bg-purple-100 dark:bg-purple-800 text-black dark:text-white rounded"
                   rows="3"
                   disabled={loadingAction}

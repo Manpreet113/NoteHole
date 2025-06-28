@@ -49,7 +49,7 @@ async function deleteThoughtFromSupabase(id, userId) {
 }
 
 function Thoughts() {
-  const { user } = useAuthStore();
+  const { user, loading: authLoading } = useAuthStore();
   const userId = user?.id;
   const [thoughts, setThoughts] = useState([]);
   const [newThought, setNewThought] = useState('');
@@ -60,39 +60,60 @@ function Thoughts() {
   const editInputRef = useRef(null);
 
   // Global search query from store
-  const { searchQuery } = useSearchStore();
+  const { searchQuery, setThoughts: setSearchThoughts } = useSearchStore();
 
   // Load thoughts from Supabase or localStorage on mount or login/logout
   useEffect(() => {
+    if (authLoading) {
+      console.log('Auth still loading, skipping thoughts load');
+      return;
+    }
+    
     const loadThoughts = async () => {
       setLoadingFetch(true);
+      console.log('Loading thoughts - userId:', userId);
       if (userId) {
         try {
           const data = await fetchThoughts(userId);
+          console.log('Loaded thoughts from Supabase:', data);
           setThoughts(data || []);
         } catch (e) {
+          console.error('Failed to fetch thoughts from Supabase:', e);
           setThoughts([]);
           toast.error('Failed to fetch thoughts from Supabase');
         }
       } else {
         const saved = localStorage.getItem('thoughts');
+        console.log('Loading thoughts from localStorage:', saved);
         setThoughts(saved ? JSON.parse(saved) : []);
       }
       setLoadingFetch(false);
     };
     loadThoughts();
-  }, [userId]);
+  }, [userId, authLoading]);
+
+  // Sync thoughts with search store whenever thoughts change
+  useEffect(() => {
+    setSearchThoughts(thoughts);
+  }, [thoughts, setSearchThoughts]);
 
   // Persist to localStorage if not logged in
   useEffect(() => {
-    if (!userId) {
+    console.log('Thoughts useEffect - userId:', userId, 'authLoading:', authLoading, 'thoughts count:', thoughts.length);
+    if (!authLoading && !userId) {
+      console.log('Saving thoughts to localStorage:', thoughts);
       localStorage.setItem('thoughts', JSON.stringify(thoughts));
+    } else if (authLoading) {
+      console.log('Auth still loading, skipping localStorage save');
+    } else {
+      console.log('User is logged in, not saving to localStorage');
     }
-  }, [thoughts, userId]);
+  }, [thoughts, userId, authLoading]);
 
   // Add a new thought
   const addThought = async () => {
     if (!newThought.trim()) return;
+    console.log('Adding thought - userId:', userId, 'thought:', newThought);
     setLoadingAction(true);
     const thought = {
       id: crypto.randomUUID(),
@@ -102,12 +123,15 @@ function Thoughts() {
     if (userId) {
       try {
         const saved = await addThoughtToSupabase(thought, userId);
+        console.log('Saved thought to Supabase:', saved);
         setThoughts([saved, ...thoughts]);
         toast.success('Thought added!');
       } catch (e) {
+        console.error('Failed to add thought to Supabase:', e);
         toast.error('Failed to add thought');
       }
     } else {
+      console.log('Adding thought locally:', thought);
       setThoughts([thought, ...thoughts]);
       toast.success('Thought added locally!');
     }
@@ -185,6 +209,12 @@ function Thoughts() {
         type="text"
         value={newThought}
         onChange={(e) => setNewThought(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            addThought();
+          }
+        }}
         className="w-full px-4 py-2 bg-white/5 border border-purple-400/40 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-purple-500"
         placeholder="Dump a thought... (e.g., @idea:dark-mode)"
         disabled={loadingAction}
@@ -203,6 +233,12 @@ function Thoughts() {
                   type="text"
                   value={editText}
                   onChange={(e) => setEditText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      saveEdit(thought.id);
+                    }
+                  }}
                   className="flex-1 p-2 bg-purple-700 text-white rounded"
                   disabled={loadingAction}
                 />

@@ -6,26 +6,23 @@ import Thoughts from './pages/Thoughts';
 import Ideas from './pages/Ideas';
 import Tasks from './pages/Tasks';
 import LoginForm from './components/Login';
-import { SearchProvider } from './context/SearchContext';
 import Layout from './components/Layout';
 
 function App() {
   return (
-    // Provide global search context to all routes
-    <SearchProvider>
-      <Routes>
-        {/* Public landing page */}
-        <Route path="/" element={<Landing />} />
-        {/* Main app layout with nested routes */}
-        <Route element={<Layout />} >
-          <Route path="/thoughts" element={<Thoughts />} />
-          <Route path="/ideas" element={<Ideas />} />
-          <Route path="/tasks" element={<Tasks />} />
-        </Route>
-        {/* Login page (outside main layout) */}
-        <Route path="/login" element={<LoginForm />} />
-      </Routes>
-    </SearchProvider>
+    // Main app routes
+    <Routes>
+      {/* Public landing page */}
+      <Route path="/" element={<Landing />} />
+      {/* Main app layout with nested routes */}
+      <Route element={<Layout />} >
+        <Route path="/thoughts" element={<Thoughts />} />
+        <Route path="/ideas" element={<Ideas />} />
+        <Route path="/tasks" element={<Tasks />} />
+      </Route>
+      {/* Login page (outside main layout) */}
+      <Route path="/login" element={<LoginForm />} />
+    </Routes>
   );
 }
 
