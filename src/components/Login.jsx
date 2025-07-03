@@ -85,7 +85,7 @@ export default function LoginForm() {
       <div className="max-w-sm w-full border p-10 rounded-3xl text-gray-600 space-y-6">
         {/* Title and subtitle */}
         <div className="text-center">
-          <h1 className="text-5xl font-bold tracking-tight" style={{ fontFamily: "var(--font-secondary)" }}>BrainDump</h1>
+          <h1 className="text-5xl font-bold tracking-tight" style={{ fontFamily: "var(--font-secondary)" }}> NoteHole</h1>
           <div className="mt-10">
             <h2 className="text-gray-800 text-2xl font-bold sm:text-3xl">
               {authMode === 'login' ? 'Log in to your account' : 'Create a new account'}

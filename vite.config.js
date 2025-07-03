@@ -17,8 +17,8 @@ export default defineConfig({
         'android-chrome-512x512.png',
       ],
       manifest: {
-        name: 'BrainDump',
-        short_name: 'BrainDump',
+        name: ' NoteHole',
+        short_name: ' NoteHole',
         description: 'Organize your thoughts, tasks, and ideas in one place.',
         theme_color: '#ffffff',
         background_color: '#ffffff',

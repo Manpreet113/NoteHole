@@ -1,5 +1,5 @@
 // Landing.jsx
-// Landing page for BrainDump: hero, features, FAQ, and theme toggle
+// Landing page for  NoteHole: hero, features, FAQ, and theme toggle
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import {
@@ -72,7 +72,7 @@ function Landing() {
             className="text-xl sm:text-2xl font-bold tracking-tight"
             style={{ fontFamily: "var(--font-secondary)" }}
           >
-            BrainDump
+             NoteHole
           </h1>
           <div className="flex items-center gap-2 sm:gap-4 relative">
             <button
@@ -175,11 +175,11 @@ function Landing() {
         <div className="divide-y border border-gray-300 dark:border-gray-700 rounded-xl backdrop-blur-xl bg-white/20 dark:bg-black/20">
           {[
             {
-              q: "What exactly is BrainDump?",
+              q: "What exactly is  NoteHole?",
               a: "It's your brain's messy desk — but digital. Minimalist personal knowledge manager where everything stays connected like a spider web.",
             },
             {
-              q: "How is BrainDump different from Notion, Obsidian, or Evernote?",
+              q: "How is  NoteHole different from Notion, Obsidian, or Evernote?",
               a: "Lighter than Obsidian, simpler than Notion, more flexible than Evernote. No folders, no pressure. Just dump stuff and link it.",
             },
             {

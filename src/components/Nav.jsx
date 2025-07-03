@@ -83,13 +83,13 @@ function Nav() {
           </motion.div>
         </button>
 
-        {/* 🧠 BrainDump Title (hidden on tiny screens) */}
+        {/* 🧠  NoteHole Title (hidden on tiny screens) */}
         {!isTinyScreen && (
-          <Link to="/" aria-label='BrainDump Landing Page'><h1
+          <Link to="/" aria-label=' NoteHole Landing Page'><h1
             className="sm:block text-xl sm:text-2xl font-semibold tracking-tight"
             style={{ fontFamily: 'var(--font-secondary)' }}
           >
-            BrainDump
+             NoteHole
           </h1>
           </Link>
         )}
@@ -107,7 +107,7 @@ function Nav() {
                 focus:ring-purple-500 text-sm sm:text-base`}
               placeholder={
                 isTinyScreen
-                  ? '🧠 BrainDump | 🔍 Search the dump'
+                  ? '🧠  NoteHole | 🔍 Search the dump'
                   : '🔍 Search the dump'
               }
               aria-label="Search the dump"
