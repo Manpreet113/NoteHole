@@ -1,6 +1,6 @@
-# 🧠 BrainDump
+# NoteHole
 
-Welcome to **BrainDump** — where chaos gets a UI.
+Welcome to **NoteHole** — where chaos gets a UI.
 
 This is not your average productivity app. It’s a digital dumping ground for every random shower thought, weird 3AM idea, half-written startup plan, or that one task you’ll probably still ignore.
 
@@ -52,7 +52,7 @@ MIT. Do whatever you want. Fork it, clone it, print it, eat it. Just don’t DM 
 ## 💻 Dev Setup
 
 ```bash
-git clone https://github.com/Manpreet113/BrainDump.git
-cd BrainDump
+git clone https://github.com/Manpreet113/NoteHole.git
+cd NoteHole
 npm install
 npm run dev
