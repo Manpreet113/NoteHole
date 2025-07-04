@@ -9,7 +9,6 @@ const useAuthStore = create(
       user: null,
       loading: true,
 
-      // Initialize session on app load
       initSession: async () => {
         const { data } = await supabase.auth.getSession();
         set({ session: data.session, user: data.session?.user || null, loading: false });
@@ -19,7 +18,6 @@ const useAuthStore = create(
         });
       },
 
-      // Email/password sign in
       signIn: async ({ email, password }) => {
         set({ loading: true });
         try {
@@ -34,7 +32,6 @@ const useAuthStore = create(
         }
       },
 
-      // Email/password signup
       signUp: async ({ email, password }) => {
         set({ loading: true });
         try {
@@ -49,7 +46,6 @@ const useAuthStore = create(
         }
       },
 
-      // OAuth sign-in (Google, GitHub etc)
       signInWithOAuth: async (provider) => {
         set({ loading: true });
         try {
@@ -66,7 +62,6 @@ const useAuthStore = create(
         }
       },
 
-      // Sign out
       signOut: async () => {
         set({ loading: true });
         try {
@@ -79,17 +74,15 @@ const useAuthStore = create(
         }
       },
 
-      // Set session (internal use)
       setSession: (session) => set({ session }),
       setLoading: (loading) => set({ loading }),
     }),
     {
-      name: 'auth-storage', // this will persist auth info
+      name: 'auth-storage',
     }
   )
 );
 
-// Listen for auth state changes and update session
 supabase.auth.getSession().then(({ data: { session } }) => {
   useAuthStore.getState().setSession(session);
   useAuthStore.getState().setLoading(false);
