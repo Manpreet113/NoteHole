@@ -147,15 +147,19 @@ function Ideas() {
   // Persist to localStorage if not logged in
   useEffect(() => {
     if (!authLoading && !userId) {
-      localStorage.setItem('ideas', JSON.stringify(ideas));
-    } else if (authLoading) {
-      //
-    } else {
-      //
-    }
-  }, [ideas, userId, authLoading]);
+    const isHydrated = JSON.parse(localStorage.getItem('ideas') || '[]');
 
-  useIdeaSync(userId, addIdeaToSupabase, setIdeas);
+    // Only save if there's something to actually persist
+    if (ideas.length > 0) {
+      localStorage.setItem('ideas', JSON.stringify(ideas));
+    }
+
+    // Optional: prevent overwriting if data already exists
+    else if (isHydrated.length > 0) {
+      // Don't overwrite localStorage with empty state
+    }
+  }
+}, [ideas, userId, authLoading]);
 
   // Add a new idea
   const addIdea = async () => {

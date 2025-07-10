@@ -146,13 +146,19 @@ function Tasks() {
   // Persist to localStorage if not logged in
   useEffect(() => {
     if (!authLoading && !userId) {
+    const isHydrated = JSON.parse(localStorage.getItem('tasks') || '[]');
+
+    // Only save if there's something to actually persist
+    if (tasks.length > 0) {
       localStorage.setItem('tasks', JSON.stringify(tasks));
-    } else if (authLoading) {
-      //
-    } else {
-      //
     }
-  }, [tasks, userId, authLoading]);
+
+    // Optional: prevent overwriting if data already exists
+    else if (isHydrated.length > 0) {
+      // Don't overwrite localStorage with empty state
+    }
+  }
+}, [tasks, userId, authLoading]);
 
   useTaskSync(userId, addTaskToSupabase, setTasks);
 
@@ -280,7 +286,7 @@ function Tasks() {
     searchQuery.trim() === ''
       ? tasks.filter((t) => {
           if (filter === 'pending') return !t.is_done;
-          if (filter === 'Completed') return t.is_done;
+          if (filter === 'completed') return t.is_done;
           return true;
         })
       : fuse
@@ -288,7 +294,7 @@ function Tasks() {
           .map((r) => r.item)
           .filter((t) => {
             if (filter === 'pending') return !t.is_done;
-            if (filter === 'Completed') return t.is_done;
+            if (filter === 'completed') return t.is_done;
             return true;
           });
 
@@ -314,7 +320,7 @@ function Tasks() {
       />
       {/* Filter buttons */}
       <div className="my-6 flex gap-4">
-        {['all', 'pending', 'Completed'].map((type) => (
+        {['all', 'pending', 'completed'].map((type) => (
           <button
             key={type}
             onClick={() => setFilter(type)}
@@ -374,6 +380,7 @@ function Tasks() {
                     type="checkbox"
                     checked={task.is_done}
                     onChange={() => toggleTask(task.id)}
+                    aria-label={`Mark ${task.name} as ${task.is_done ? 'incomplete' : 'done'}`}
                     className="h-5 w-5 text-purple-600"
                     disabled={loadingAction}
                   />

@@ -157,14 +157,20 @@ function Thoughts() {
 
   // Persist to localStorage if not logged in
   useEffect(() => {
-    if (!authLoading && !userId) {
+  if (!authLoading && !userId) {
+    const isHydrated = JSON.parse(localStorage.getItem('thoughts') || '[]');
+
+    // Only save if there's something to actually persist
+    if (thoughts.length > 0) {
       localStorage.setItem('thoughts', JSON.stringify(thoughts));
-    } else if (authLoading) {
-      //
-    } else {
-      //
     }
-  }, [thoughts, userId, authLoading]);
+
+    // Optional: prevent overwriting if data already exists
+    else if (isHydrated.length > 0) {
+      // Don't overwrite localStorage with empty state
+    }
+  }
+}, [thoughts, userId, authLoading]);
 
   // Add offline sync logic
   useNoteSync(userId, addThoughtToSupabase, setThoughts);
@@ -255,7 +261,7 @@ function Thoughts() {
   // Memoized Fuse instance for fuzzy search
   const fuse = useMemo(() => {
     return new Fuse(thoughts, {
-      keys: ['text'],
+      keys: ['thought'],
       threshold: 0.3,
     });
   }, [thoughts]);
@@ -302,11 +308,12 @@ function Thoughts() {
                   value={editText}
                   onChange={(e) => setEditText(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      saveEdit(thought.id);
-                    }
-                  }}
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    saveEdit(thought.id);
+  }
+}}
+
                   className="flex-1 p-2 bg-purple-700 text-white rounded"
                   disabled={loadingAction}
                 />
@@ -339,7 +346,7 @@ function Thoughts() {
                   <button
                     onClick={() => {
                       setEditingId(thought.id);
-                      setEditText(thought.text);
+                      setEditText(thought.thought);
                     }}
                     className="text-yellow-400 hover:text-yellow-600 text-sm"
                     disabled={loadingAction}
