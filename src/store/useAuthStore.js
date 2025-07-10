@@ -1,3 +1,5 @@
+// useAuthStore.js
+// Zustand store for authentication state and actions (login, signup, OAuth, session persistence)
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { supabase } from '../components/supabaseClient';
@@ -5,10 +7,12 @@ import { supabase } from '../components/supabaseClient';
 const useAuthStore = create(
   persist(
     (set, get) => ({
+      // Auth state
       session: null,
       user: null,
       loading: true,
 
+      // Initialize session from Supabase
       initSession: async () => {
         const { data } = await supabase.auth.getSession();
         set({
@@ -18,6 +22,7 @@ const useAuthStore = create(
         });
       },
 
+      // Sign in with email/password
       signIn: async ({ email, password, redirectTo = "/ideas" }) => {
         set({ loading: true });
         try {
@@ -44,6 +49,7 @@ const useAuthStore = create(
         }
       },
 
+      // Sign up with email/password
       signUp: async ({ email, password, redirectTo = "/ideas" }) => {
         set({ loading: true });
         try {
@@ -72,6 +78,7 @@ const useAuthStore = create(
         }
       },
 
+      // Sign in with OAuth provider (Google, Github, etc.)
       signInWithOAuth: async (provider) => {
         set({ loading: true });
         const { error } = await supabase.auth.signInWithOAuth({
@@ -86,6 +93,7 @@ const useAuthStore = create(
         return { success: true };
       },
 
+      // Sign out and clear session
       signOut: async () => {
         set({ loading: true });
         try {
@@ -98,16 +106,18 @@ const useAuthStore = create(
         }
       },
 
+      // Set session and user state
       setSession: (session) =>
         set({
           session,
           user: session?.user || null,
         }),
 
+      // Set loading state
       setLoading: (loading) => set({ loading }),
     }),
     {
-      name: 'auth-storage',
+      name: 'auth-storage', // Persist store in localStorage
     }
   )
 );

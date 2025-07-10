@@ -1,3 +1,5 @@
+// Callback.jsx
+// Handles OAuth callback: finalizes login and redirects user after authentication
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../components/supabaseClient";
@@ -8,6 +10,7 @@ const OAuthCallback = () => {
   const setSession = useAuthStore((state) => state.setSession);
 
   useEffect(() => {
+    // Finalize OAuth login and set session
     const finalizeLogin = async () => {
       const { data, error } = await supabase.auth.getSession();
       if (error || !data.session) {

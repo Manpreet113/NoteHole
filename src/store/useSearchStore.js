@@ -7,7 +7,7 @@ const useSearchStore = create((set) => ({
   searchQuery: '',
   setSearchQuery: (query) => set({ searchQuery: query }),
 
-  // Individual page data
+  // Individual page data for search
   ideas: [],
   tasks: [],
   thoughts: [],

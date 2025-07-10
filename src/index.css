@@ -1,3 +1,6 @@
+/* index.css
+   Global styles, font imports, and theme variables for the app
+*/
 @import "tailwindcss";
 @import 'remixicon/fonts/remixicon.css';
 

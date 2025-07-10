@@ -169,7 +169,7 @@ function Thoughts() {
   // Add offline sync logic
   useNoteSync(userId, addThoughtToSupabase, setThoughts);
 
-  // Add a new thought
+  // Add a new thought (handles both online and offline)
   const addThought = async () => {
     if (!newThought.trim()) return;
     setLoadingAction(true);
@@ -205,7 +205,7 @@ function Thoughts() {
     setLoadingAction(false);
   };
 
-  // Save edits to a thought
+  // Save edits to a thought (handles both online and offline)
   const saveEdit = async (id) => {
     setLoadingAction(true);
     if (userId) {
@@ -227,7 +227,7 @@ function Thoughts() {
     setLoadingAction(false);
   };
 
-  // Delete a thought
+  // Delete a thought (handles both online and offline)
   const deleteThought = async (id) => {
     setLoadingAction(true);
     if (userId) {
@@ -252,7 +252,7 @@ function Thoughts() {
     }
   }, [editingId]);
 
-  // Memoized Fuse instance
+  // Memoized Fuse instance for fuzzy search
   const fuse = useMemo(() => {
     return new Fuse(thoughts, {
       keys: ['text'],
@@ -269,6 +269,7 @@ function Thoughts() {
   return (
     <div>
       <h1 className="text-4xl font-bold mb-6">Thoughts Dump Zone</h1>
+      {/* Show loading or saving state */}
       {(loadingFetch || loadingAction) && <div className="text-center text-gray-500 mb-4">{loadingFetch ? 'Loading...' : 'Saving...'}</div>}
       {/* New thought input */}
       <input
@@ -294,6 +295,7 @@ function Thoughts() {
           >
             {editingId === thought.id ? (
               <div className="flex w-full space-x-2">
+                {/* Edit input for thought */}
                 <input
                   ref={editInputRef}
                   type="text"
@@ -325,6 +327,7 @@ function Thoughts() {
               </div>
             ) : (
               <>
+                {/* Render parsed thought text with links and timestamp */}
                 <span>
                   {parseText(thought.thought)}{' '}
                   <span className="text-gray-400 text-sm">
@@ -332,6 +335,7 @@ function Thoughts() {
                   </span>
                 </span>
                 <div className="space-x-2">
+                  {/* Edit button */}
                   <button
                     onClick={() => {
                       setEditingId(thought.id);
@@ -342,6 +346,7 @@ function Thoughts() {
                   >
                     ✎
                   </button>
+                  {/* Delete button */}
                   <button
                     onClick={() => deleteThought(thought.id)}
                     className="text-red-400 hover:text-red-600 text-sm"

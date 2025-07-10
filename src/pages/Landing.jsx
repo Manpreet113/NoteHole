@@ -1,5 +1,5 @@
 // Landing.jsx
-// Landing page for  NoteHole: hero, features, FAQ, and theme toggle
+// Landing page for NoteHole: hero, features, FAQ, and theme toggle
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import {
@@ -75,6 +75,7 @@ function Landing() {
              NoteHole
           </h1>
           <div className="flex items-center gap-2 sm:gap-4 relative">
+            {/* Theme toggle button */}
             <button
               onClick={() => toggleDarkMode(!isDark)}
               aria-label="Toggle dark mode"
@@ -97,13 +98,14 @@ function Landing() {
                     />
                   ) : (
                     <span className="font-bold text-lg">
+                      {/* User initials or icon */}
                       {user.user_metadata?.full_name
                         ? user.user_metadata.full_name.split(' ').map((n) => n[0]).join('').slice(0,2).toUpperCase()
                         : <i className="ri-user-line" />}
                     </span>
                   )}
                 </button>
-                {/* Dropdown menu */}
+                {/* Dropdown menu for user actions */}
                 {showMenu && (
                   <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
                     <div className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200 border-b border-gray-100 dark:border-gray-800">
@@ -135,6 +137,7 @@ function Landing() {
           Declutter your mind, one dump at a time.
         </h2>
         <p className="text-base sm:text-lg mb-6 text-gray-600 dark:text-gray-300">
+          {/* App description */}
           Your personal mental tracking dashboard — log thoughts, track tasks, organize ideas before they vanish into the void.
         </p>
         <Link to="/thoughts">
@@ -173,6 +176,7 @@ function Landing() {
           Common Questions
         </h3>
         <div className="divide-y border border-gray-300 dark:border-gray-700 rounded-xl backdrop-blur-xl bg-white/20 dark:bg-black/20">
+          {/* FAQ items using Disclosure for accordion */}
           {[
             {
               q: "What exactly is  NoteHole?",
@@ -219,6 +223,7 @@ function Landing() {
       {/* Footer with theme toggle */}
       <footer className="w-full text-center px-6 py-6 border-t border-gray-300 dark:border-gray-700 text-sm text-gray-500 dark:text-gray-400">
         <p>© No rights reserved. Steal this idea and build it better, we dare you.</p>
+        {/* Theme toggle button in footer */}
         <button
           onClick={() => toggleDarkMode(!isDark)}
           aria-label="Toggle dark mode"

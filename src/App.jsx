@@ -23,6 +23,7 @@ function App() {
       </Route>
       {/* Login page (outside main layout) */}
       <Route path="/login" element={<LoginForm />} />
+      {/* OAuth callback handler */}
       <Route path="/auth/callback" element={<OAuthCallback />} />
     </Routes>
   );

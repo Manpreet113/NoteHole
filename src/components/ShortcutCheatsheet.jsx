@@ -31,7 +31,8 @@ export default function ShortcutCheatsheet() {
         {/* Modal panel with shortcuts list */}
         <Dialog.Panel className="relative z-10 bg-white dark:bg-gray-900 p-6 rounded-2xl w-full max-w-md shadow-2xl">
           <Dialog.Title className="text-xl font-semibold mb-4">
-            ⌨️ Keyboard Shortcuts
+            {/* Keyboard icon and title */}
+             Keyboard Shortcuts
           </Dialog.Title>
 
           {/* List of shortcuts */}
@@ -46,7 +47,7 @@ export default function ShortcutCheatsheet() {
             ))}
           </ul>
 
-          {/* Close button */}
+          {/* Close button (top-right) */}
           <button
             onClick={() => setShowCheatsheet(false)}
             className="absolute top-2 right-3 text-gray-500 hover:text-red-500 text-xl"

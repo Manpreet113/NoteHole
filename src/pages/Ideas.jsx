@@ -195,7 +195,7 @@ function Ideas() {
     setLoadingAction(false);
   };
 
-  // Save edits to an idea
+  // Save edits to an idea (handles both online and offline)
   const saveEdit = async (id) => {
     setLoadingAction(true);
     if (userId) {
@@ -222,7 +222,7 @@ function Ideas() {
     setLoadingAction(false);
   };
 
-  // Delete an idea
+  // Delete an idea (handles both online and offline)
   const deleteIdea = async (id) => {
     setLoadingAction(true);
     if (userId) {
@@ -247,7 +247,7 @@ function Ideas() {
     }
   }, [editingId]);
 
-  // Memoized Fuse instance
+  // Memoized Fuse instance for fuzzy search
   const fuse = useMemo(() => {
     // Only create Fuse if ideas change
     return new Fuse(ideas, {
@@ -265,7 +265,7 @@ function Ideas() {
   return (
     <div>
       <h1 className="text-4xl font-bold mb-6">Ideas Board</h1>
-      
+      {/* Show loading or saving state */}
       {(loadingFetch || loadingAction) && <div className="text-center text-gray-500 mb-4">{loadingFetch ? 'Loading...' : 'Saving...'}</div>}
       {/* New idea input */}
       <input
@@ -352,6 +352,7 @@ function Ideas() {
               </div>
             ) : (
               <>
+                {/* Render idea title and description */}
                 <h2 className="text-xl font-semibold">{idea.title}</h2>
                 <p className="text-gray-700 dark:text-gray-300">
                   {parseText(idea.description)}
@@ -360,6 +361,7 @@ function Ideas() {
                   {new Date(idea. created_at).toLocaleString()}
                 </p>
                 <div className="mt-2 flex space-x-2">
+                  {/* Edit button */}
                   <button
                     onClick={() => {
                       setEditingId(idea.id);
@@ -369,14 +371,15 @@ function Ideas() {
                     className="text-yellow-500 hover:text-yellow-700 text-sm"
                     disabled={loadingAction}
                   >
-                    ✎
+                     e
                   </button>
+                  {/* Delete button */}
                   <button
                     onClick={() => deleteIdea(idea.id)}
                     className="text-red-400 hover:text-red-600 text-sm"
                     disabled={loadingAction}
                   >
-                    ✕
+                     15
                   </button>
                 </div>
               </>

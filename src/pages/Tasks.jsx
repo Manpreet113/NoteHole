@@ -219,7 +219,7 @@ function Tasks() {
     setLoadingAction(false);
   };
 
-  // Toggle task completion
+  // Toggle task completion (handles both online and offline)
   const toggleTask = async (id) => {
     setLoadingAction(true);
     if (userId) {
@@ -242,7 +242,7 @@ function Tasks() {
     setLoadingAction(false);
   };
 
-  // Delete a task
+  // Delete a task (handles both online and offline)
   const deleteTask = async (id) => {
     setLoadingAction(true);
     if (userId) {
@@ -267,7 +267,7 @@ function Tasks() {
     }
   }, [editingId]);
 
-  // Memoized Fuse instance
+  // Memoized Fuse instance for fuzzy search
   const fuse = useMemo(() => {
     return new Fuse(tasks, {
       keys: ['name'],
@@ -295,6 +295,7 @@ function Tasks() {
   return (
     <div>
       <h1 className="text-4xl font-bold mb-6">Task Manager</h1>
+      {/* Show loading or saving state */}
       {(loadingFetch || loadingAction) && <div className="text-center text-gray-500 mb-4">{loadingFetch ? 'Loading...' : 'Saving...'}</div>}
       {/* New task input */}
       <input

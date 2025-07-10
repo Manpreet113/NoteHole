@@ -105,9 +105,9 @@ export default function SearchModal() {
   // Get section title and icon
   const getSectionInfo = (type) => {
     switch (type) {
-      case 'ideas': return { title: '💡 Ideas', count: groupedResults.ideas.length };
-      case 'tasks': return { title: '📝 Tasks', count: groupedResults.tasks.length };
-      case 'thoughts': return { title: '🧠 Thoughts', count: groupedResults.thoughts.length };
+      case 'ideas': return { title: '\ud83d\udca1 Ideas', count: groupedResults.ideas.length };
+      case 'tasks': return { title: '\ud83d\udcdd Tasks', count: groupedResults.tasks.length };
+      case 'thoughts': return { title: '\ud83e\udde0 Thoughts', count: groupedResults.thoughts.length };
       default: return { title: 'Unknown', count: 0 };
     }
   };
@@ -119,7 +119,7 @@ export default function SearchModal() {
         <Dialog.Panel className="bg-white/10 backdrop-blur-xl dark:bg-black/20 border border-white/20 dark:border-gray-800 p-6 rounded-2xl w-full max-w-2xl shadow-xl">
           <Dialog.Title className="text-xl font-semibold mb-4 text-white">
             {/* Modal title */}
-            🔍 Search Anything
+            \ud83d\udd0d Search Anything
           </Dialog.Title>
 
           {/* Search input */}
@@ -170,6 +170,7 @@ export default function SearchModal() {
                         onClick={() => handleNavigate(item)}
                         className="p-3 rounded-md cursor-pointer bg-white/5 hover:bg-white/10 border border-white/10 transition-colors"
                       >
+                        {/* Item title and content preview */}
                         <div className="text-white font-medium text-sm mb-1">
                           {item.title}
                         </div>
@@ -178,7 +179,7 @@ export default function SearchModal() {
                         </div>
                         {item.is_done !== undefined && (
                           <div className="text-xs text-gray-500 mt-1">
-                            {item.is_done ? '✅ Completed' : '⏳ Pending'}
+                            {item.is_done ? '\u2705 Completed' : '\u23f3 Pending'}
                           </div>
                         )}
                       </div>

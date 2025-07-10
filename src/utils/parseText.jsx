@@ -21,6 +21,7 @@ export function parseText(text) {
 
     // Find the referenced item and create a link if it exists
     if (type === 'thought') {
+      // Match by slugified thought text
       const thought = thoughts.find((t) => t.text.toLowerCase().replace(/[^a-z0-9]+/g, '-') === slug);
       if (thought) {
         parts.push(
@@ -36,6 +37,7 @@ export function parseText(text) {
         parts.push(match[0]);
       }
     } else if (type === 'idea') {
+      // Match by slugified idea title
       const idea = ideas.find((i) => i.title.toLowerCase().replace(/\s+/g, '-') === slug);
       if (idea) {
         parts.push(
@@ -51,6 +53,7 @@ export function parseText(text) {
         parts.push(match[0]);
       }
     } else if (type === 'task') {
+      // Match by slugified task name
       const task = tasks.find((t) => t.name.toLowerCase().replace(/\s+/g, '-') === slug);
       if (task) {
         parts.push(
