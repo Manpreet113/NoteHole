@@ -7,6 +7,7 @@ import Ideas from './pages/Ideas';
 import Tasks from './pages/Tasks';
 import LoginForm from './components/Login';
 import Layout from './components/Layout';
+import OAuthCallback from './pages/auth/Callback';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
       </Route>
       {/* Login page (outside main layout) */}
       <Route path="/login" element={<LoginForm />} />
+      <Route path="/auth/callback" element={<OAuthCallback />} />
     </Routes>
   );
 }

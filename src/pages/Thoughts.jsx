@@ -64,33 +64,34 @@ function Thoughts() {
 
   // Load thoughts from Supabase or localStorage on mount or login/logout
   useEffect(() => {
-    if (authLoading) {
-      console.log('Auth still loading, skipping thoughts load');
-      return;
-    }
-    
-    const loadThoughts = async () => {
-      setLoadingFetch(true);
-      console.log('Loading thoughts - userId:', userId);
-      if (userId) {
-        try {
-          const data = await fetchThoughts(userId);
-          console.log('Loaded thoughts from Supabase:', data);
-          setThoughts(data || []);
-        } catch (e) {
-          console.error('Failed to fetch thoughts from Supabase:', e);
-          setThoughts([]);
-          toast.error('Failed to fetch thoughts from Supabase');
-        }
-      } else {
-        const saved = localStorage.getItem('thoughts');
-        console.log('Loading thoughts from localStorage:', saved);
-        setThoughts(saved ? JSON.parse(saved) : []);
+  if (authLoading || (userId === undefined && user === null)) {
+    console.log('Skipping thoughts load - auth still loading or user undefined');
+    return;
+  }
+
+  const loadThoughts = async () => {
+    setLoadingFetch(true);
+    console.log('Loading thoughts - userId:', userId);
+    if (userId) {
+      try {
+        const data = await fetchThoughts(userId);
+        console.log('Loaded thoughts from Supabase:', data);
+        setThoughts(data || []);
+      } catch (e) {
+        console.error('Failed to fetch thoughts from Supabase:', e);
+        setThoughts([]);
+        toast.error('Failed to fetch thoughts from Supabase');
       }
-      setLoadingFetch(false);
-    };
-    loadThoughts();
-  }, [userId, authLoading]);
+    } else {
+      const saved = localStorage.getItem('thoughts');
+      console.log('Loading thoughts from localStorage:', saved);
+      setThoughts(saved ? JSON.parse(saved) : []);
+    }
+    setLoadingFetch(false);
+  };
+
+  loadThoughts();
+}, [userId, authLoading]);
 
   // Sync thoughts with search store whenever thoughts change
   useEffect(() => {

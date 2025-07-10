@@ -26,26 +26,6 @@ export default function LoginForm() {
     });
   }, []);
 
-  const handleEmailCheck = async () => {
-    setError('');
-    try {
-      const { error } = await signIn({ email, password: 'random_placeholder' });
-      if (error && error.message.includes('Invalid login credentials')) {
-        setEmailExists(true);
-        setAuthMode('login');
-        setStep('password');
-      } else if (error) {
-        setEmailExists(false);
-        setAuthMode('signup');
-        setStep('signup');
-      } else {
-        setError('Unexpected behavior, please try again.');
-      }
-    } catch (err) {
-      setError('Something went wrong. Please try again later.');
-    }
-  };
-
   const handleLogin = async () => {
     setError('');
     try {
@@ -98,19 +78,6 @@ export default function LoginForm() {
             className="w-full mt-2 px-3 py-2 text-gray-500 bg-transparent outline-none border focus:border-indigo-600 shadow-sm rounded-lg"
           />
         </div>
-
-        {step === 'email' && (
-          <button
-            onClick={handleEmailCheck}
-            disabled={loading}
-            className="w-full mt-4 px-4 py-2 text-white font-medium bg-indigo-600 hover:bg-indigo-500 rounded-lg duration-150"
-          >
-            {loading ? 'Checking...' : 'Continue'}
-          </button>
-        )}
-
-        {(step === 'password' || step === 'signup') && (
-          <>
             <div>
               <label className="font-medium">Password</label>
               <div className="relative">
@@ -137,9 +104,6 @@ export default function LoginForm() {
             >
               {loading ? 'Please wait...' : authMode === 'login' ? 'Sign In' : 'Sign Up'}
             </button>
-          </>
-        )}
-
         {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
         <p className="text-sm text-center text-gray-500">
@@ -164,14 +128,14 @@ export default function LoginForm() {
         <div className="space-y-4 text-sm font-medium">
           <button
             onClick={() => handleOAuth('google')}
-            className="w-full font-bold flex items-center justify-center gap-x-3 py-2.5 border rounded-lg hover:bg-gray-50 active:bg-gray-100"
+            className="w-full font-bold flex items-center justify-center gap-x-3 py-2.5 border rounded-lg bg-white hover:bg-gray-50 active:bg-gray-100"
           >
             <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-5 h-5" alt="google" />
             Continue with Google
           </button>
           <button
             onClick={() => handleOAuth('github')}
-            className="w-full flex font-bold items-center justify-center gap-x-3 py-2.5 border rounded-lg hover:bg-gray-50 active:bg-gray-100"
+            className="w-full flex font-bold items-center justify-center gap-x-3 py-2.5 border rounded-lg bg-white hover:bg-gray-50 active:bg-gray-100"
           >
             <img src="https://www.svgrepo.com/show/512317/github-142.svg" className="w-5 h-5" alt="github" />
             Continue with Github
