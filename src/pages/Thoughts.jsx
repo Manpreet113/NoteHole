@@ -15,7 +15,7 @@ async function fetchThoughts(userId) {
     .from('thoughts')
     .select('*')
     .eq('user_id', userId)
-    .order('createdAt', { ascending: false });
+    .order('created_at', { ascending: false });
   if (error) throw error;
   return data;
 }
@@ -23,7 +23,8 @@ async function fetchThoughts(userId) {
 async function addThoughtToSupabase(thought, userId) {
   const { data, error } = await supabase
     .from('thoughts')
-    .insert([{ ...thought, user_id: userId }]);
+    .insert([{ ...thought, user_id: userId }])
+    .select();
   if (error) throw error;
   return data[0];
 }
@@ -31,7 +32,7 @@ async function addThoughtToSupabase(thought, userId) {
 async function updateThoughtInSupabase(thought, userId) {
   const { data, error } = await supabase
     .from('thoughts')
-    .update({ text: thought.text })
+    .update({ thought: thought.thought })
     .eq('id', thought.id)
     .eq('user_id', userId)
     .select();
@@ -118,8 +119,8 @@ function Thoughts() {
     setLoadingAction(true);
     const thought = {
       id: crypto.randomUUID(),
-      text: newThought,
-      createdAt: new Date().toISOString(),
+      thought: newThought,
+       created_at: new Date().toISOString(),
     };
     if (userId) {
       try {
@@ -145,7 +146,7 @@ function Thoughts() {
     setLoadingAction(true);
     if (userId) {
       try {
-        const updated = await updateThoughtInSupabase({ id, text: editText }, userId);
+        const updated = await updateThoughtInSupabase({ id, thought: editText }, userId);
         setThoughts(thoughts.map((t) => (t.id === id ? updated : t)));
         toast.success('Thought updated!');
       } catch (e) {
@@ -153,7 +154,7 @@ function Thoughts() {
       }
     } else {
       setThoughts(
-        thoughts.map((t) => (t.id === id ? { ...t, text: editText } : t))
+        thoughts.map((t) => (t.id === id ? { ...t, thought: editText } : t))
       );
       toast.success('Thought updated locally!');
     }
@@ -261,9 +262,9 @@ function Thoughts() {
             ) : (
               <>
                 <span>
-                  {parseText(thought.text)}{' '}
+                  {parseText(thought.thought)}{' '}
                   <span className="text-gray-400 text-sm">
-                    ({new Date(thought.createdAt).toLocaleString()})
+                    ({new Date(thought. created_at).toLocaleString()})
                   </span>
                 </span>
                 <div className="space-x-2">

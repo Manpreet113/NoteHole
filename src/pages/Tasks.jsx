@@ -15,7 +15,7 @@ async function fetchTasks(userId) {
     .from('tasks')
     .select('*')
     .eq('user_id', userId)
-    .order('createdAt', { ascending: false });
+    .order(' created_at', { ascending: false });
   if (error) throw error;
   return data;
 }
@@ -23,7 +23,8 @@ async function fetchTasks(userId) {
 async function addTaskToSupabase(task, userId) {
   const { data, error } = await supabase
     .from('tasks')
-    .insert([{ ...task, user_id: userId }]);
+    .insert([{ ...task, user_id: userId }])
+    .select();
   if (error) throw error;
   return data[0];
 }
@@ -31,7 +32,7 @@ async function addTaskToSupabase(task, userId) {
 async function updateTaskInSupabase(task, userId) {
   const { data, error } = await supabase
     .from('tasks')
-    .update({ name: task.name, completed: task.completed })
+    .update({ name: task.name, is_done: task.is_done })
     .eq('id', task.id)
     .eq('user_id', userId)
     .select();
@@ -119,8 +120,8 @@ function Tasks() {
     const task = {
       id: crypto.randomUUID(),
       name: newTask,
-      completed: false,
-      createdAt: new Date().toISOString(),
+      is_done: false,
+       created_at: new Date().toISOString(),
     };
     if (userId) {
       try {
@@ -146,7 +147,7 @@ function Tasks() {
     setLoadingAction(true);
     if (userId) {
       try {
-        const updated = await updateTaskInSupabase({ id, name: editText, completed: false }, userId);
+        const updated = await updateTaskInSupabase({ id, name: editText, is_done: false }, userId);
         setTasks(tasks.map((task) => (task.id === id ? updated : task)));
         toast.success('Task updated!');
       } catch (e) {
@@ -173,7 +174,7 @@ function Tasks() {
     if (userId) {
       try {
         const task = tasks.find((t) => t.id === id);
-        const updated = await updateTaskInSupabase({ id, name: task.name, completed: !task.completed }, userId);
+        const updated = await updateTaskInSupabase({ id, name: task.name, is_done: !task.is_done }, userId);
         setTasks(tasks.map((t) => (t.id === id ? updated : t)));
         toast.success('Task updated!');
       } catch (e) {
@@ -182,7 +183,7 @@ function Tasks() {
     } else {
       setTasks(
         tasks.map((t) =>
-          t.id === id ? { ...t, completed: !t.completed } : t
+          t.id === id ? { ...t, is_done: !t.is_done } : t
         )
       );
       toast.success('Task updated locally!');
@@ -228,8 +229,8 @@ function Tasks() {
     .search(searchQuery.trim() || '')
     .map((r) => r.item)
     .filter((t) => {
-      if (filter === 'pending') return !t.completed;
-      if (filter === 'completed') return t.completed;
+      if (filter === 'pending') return !t.is_done;
+      if (filter === 'Completed') return t.is_done;
       return true;
     });
 
@@ -254,7 +255,7 @@ function Tasks() {
       />
       {/* Filter buttons */}
       <div className="my-6 flex gap-4">
-        {['all', 'pending', 'completed'].map((type) => (
+        {['all', 'pending', 'Completed'].map((type) => (
           <button
             key={type}
             onClick={() => setFilter(type)}
@@ -312,14 +313,14 @@ function Tasks() {
                 <div className="flex items-center gap-3">
                   <input
                     type="checkbox"
-                    checked={task.completed}
+                    checked={task.is_done}
                     onChange={() => toggleTask(task.id)}
                     className="h-5 w-5 text-purple-600"
                     disabled={loadingAction}
                   />
                   <span
                     className={`text-base ${
-                      task.completed ? 'line-through text-gray-500' : ''
+                      task.is_done ? 'line-through text-gray-500' : ''
                     }`}
                   >
                     {parseText(task.name)}
@@ -327,7 +328,7 @@ function Tasks() {
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-xs text-gray-400">
-                    {new Date(task.createdAt).toLocaleString()}
+                    {new Date(task. created_at).toLocaleString()}
                   </span>
                   <button
                     onClick={() => {

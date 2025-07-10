@@ -15,7 +15,7 @@ async function fetchIdeas(userId) {
     .from('ideas')
     .select('*')
     .eq('user_id', userId)
-    .order('createdAt', { ascending: false });
+    .order('created_at', { ascending: false });
   if (error) throw error;
   return data;
 }
@@ -23,7 +23,8 @@ async function fetchIdeas(userId) {
 async function addIdeaToSupabase(idea, userId) {
   const { data, error } = await supabase
     .from('ideas')
-    .insert([{ ...idea, user_id: userId }]);
+    .insert([{ ...idea, user_id: userId }])
+    .select();
   if (error) throw error;
   return data[0];
 }
@@ -121,7 +122,7 @@ function Ideas() {
       id: crypto.randomUUID(),
       title: newTitle,
       description: newDesc,
-      createdAt: new Date().toISOString(),
+       created_at: new Date().toISOString(),
     };
     if (userId) {
       try {
@@ -312,7 +313,7 @@ function Ideas() {
                   {parseText(idea.description)}
                 </p>
                 <p className="text-gray-500 text-sm mt-2">
-                  {new Date(idea.createdAt).toLocaleString()}
+                  {new Date(idea. created_at).toLocaleString()}
                 </p>
                 <div className="mt-2 flex space-x-2">
                   <button

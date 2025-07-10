@@ -28,7 +28,7 @@ export default function SearchModal() {
         type: 'ideas',
         title: idea.title,
         content: idea.description,
-        createdAt: idea.createdAt,
+         created_at: idea. created_at,
         originalData: idea
       });
     });
@@ -40,8 +40,8 @@ export default function SearchModal() {
         type: 'tasks',
         title: task.name,
         content: task.name, // Tasks only have name field
-        completed: task.completed,
-        createdAt: task.createdAt,
+        is_done: task.is_done,
+         created_at: task. created_at,
         originalData: task
       });
     });
@@ -51,9 +51,9 @@ export default function SearchModal() {
       combined.push({
         id: thought.id,
         type: 'thoughts',
-        title: thought.text.substring(0, 50) + (thought.text.length > 50 ? '...' : ''),
+        title: thought.thought.substring(0, 50) + (thought.thought.length > 50 ? '...' : ''),
         content: thought.text,
-        createdAt: thought.createdAt,
+         created_at: thought. created_at,
         originalData: thought
       });
     });
@@ -176,9 +176,9 @@ export default function SearchModal() {
                         <div className="text-xs text-gray-400 line-clamp-2">
                           {item.content}
                         </div>
-                        {item.completed !== undefined && (
+                        {item.is_done !== undefined && (
                           <div className="text-xs text-gray-500 mt-1">
-                            {item.completed ? '✅ Completed' : '⏳ Pending'}
+                            {item.is_done ? '✅ Completed' : '⏳ Pending'}
                           </div>
                         )}
                       </div>
