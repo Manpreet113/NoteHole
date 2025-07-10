@@ -49,6 +49,66 @@ async function deleteThoughtFromSupabase(id, userId) {
   if (error) throw error;
 }
 
+// --- Offline sync hook ---
+function useNoteSync(userId, addThoughtToSupabase, setThoughts) {
+  useEffect(() => {
+    // Helper: get unsynced notes from localStorage
+    function getUnsyncedNotes() {
+      const saved = localStorage.getItem('thoughts');
+      if (!saved) return [];
+      try {
+        const arr = JSON.parse(saved);
+        return Array.isArray(arr) ? arr.filter((n) => n.synced === false) : [];
+      } catch {
+        return [];
+      }
+    }
+
+    // Helper: remove synced notes from localStorage
+    function removeSyncedNotes(syncedIds) {
+      const saved = localStorage.getItem('thoughts');
+      if (!saved) return;
+      try {
+        const arr = JSON.parse(saved);
+        const filtered = arr.filter((n) => !syncedIds.includes(n.id));
+        localStorage.setItem('thoughts', JSON.stringify(filtered));
+      } catch {}
+    }
+
+    // Sync function
+    async function syncNotes() {
+      if (!userId || !navigator.onLine) return;
+      const unsynced = getUnsyncedNotes();
+      if (!unsynced.length) return;
+      const syncedIds = [];
+      for (const note of unsynced) {
+        try {
+          // Remove synced flag before sending
+          const { synced, ...toSave } = note;
+          const saved = await addThoughtToSupabase(toSave, userId);
+          setThoughts((prev) => [saved, ...prev.filter((n) => n.id !== note.id)]);
+          syncedIds.push(note.id);
+        } catch (e) {
+          // If any fail, skip removal
+        }
+      }
+      if (syncedIds.length) removeSyncedNotes(syncedIds);
+    }
+
+    // Sync on login or online
+    if (userId && navigator.onLine) {
+      syncNotes();
+    }
+
+    // Listen for coming online
+    function handleOnline() {
+      if (userId) syncNotes();
+    }
+    window.addEventListener('online', handleOnline);
+    return () => window.removeEventListener('online', handleOnline);
+  }, [userId, addThoughtToSupabase, setThoughts]);
+}
+
 function Thoughts() {
   const { user, loading: authLoading } = useAuthStore();
   const userId = user?.id;
@@ -66,17 +126,14 @@ function Thoughts() {
   // Load thoughts from Supabase or localStorage on mount or login/logout
   useEffect(() => {
   if (authLoading || (userId === undefined && user === null)) {
-    console.log('Skipping thoughts load - auth still loading or user undefined');
     return;
   }
 
   const loadThoughts = async () => {
     setLoadingFetch(true);
-    console.log('Loading thoughts - userId:', userId);
     if (userId) {
       try {
         const data = await fetchThoughts(userId);
-        console.log('Loaded thoughts from Supabase:', data);
         setThoughts(data || []);
       } catch (e) {
         console.error('Failed to fetch thoughts from Supabase:', e);
@@ -85,7 +142,6 @@ function Thoughts() {
       }
     } else {
       const saved = localStorage.getItem('thoughts');
-      console.log('Loading thoughts from localStorage:', saved);
       setThoughts(saved ? JSON.parse(saved) : []);
     }
     setLoadingFetch(false);
@@ -101,31 +157,30 @@ function Thoughts() {
 
   // Persist to localStorage if not logged in
   useEffect(() => {
-    console.log('Thoughts useEffect - userId:', userId, 'authLoading:', authLoading, 'thoughts count:', thoughts.length);
     if (!authLoading && !userId) {
-      console.log('Saving thoughts to localStorage:', thoughts);
       localStorage.setItem('thoughts', JSON.stringify(thoughts));
     } else if (authLoading) {
-      console.log('Auth still loading, skipping localStorage save');
+      //
     } else {
-      console.log('User is logged in, not saving to localStorage');
+      //
     }
   }, [thoughts, userId, authLoading]);
+
+  // Add offline sync logic
+  useNoteSync(userId, addThoughtToSupabase, setThoughts);
 
   // Add a new thought
   const addThought = async () => {
     if (!newThought.trim()) return;
-    console.log('Adding thought - userId:', userId, 'thought:', newThought);
     setLoadingAction(true);
     const thought = {
       id: crypto.randomUUID(),
       thought: newThought,
-       created_at: new Date().toISOString(),
+      created_at: new Date().toISOString(),
     };
-    if (userId) {
+    if (userId && navigator.onLine) {
       try {
         const saved = await addThoughtToSupabase(thought, userId);
-        console.log('Saved thought to Supabase:', saved);
         setThoughts([saved, ...thoughts]);
         toast.success('Thought added!');
       } catch (e) {
@@ -133,8 +188,17 @@ function Thoughts() {
         toast.error('Failed to add thought');
       }
     } else {
-      console.log('Adding thought locally:', thought);
-      setThoughts([thought, ...thoughts]);
+      // Save locally with synced: false
+      const offlineThought = { ...thought, synced: false };
+      const saved = localStorage.getItem('thoughts');
+      let arr = [];
+      try {
+        arr = saved ? JSON.parse(saved) : [];
+        if (!Array.isArray(arr)) arr = [];
+      } catch { arr = []; }
+      arr.unshift(offlineThought);
+      localStorage.setItem('thoughts', JSON.stringify(arr));
+      setThoughts([offlineThought, ...thoughts]);
       toast.success('Thought added locally!');
     }
     setNewThought('');

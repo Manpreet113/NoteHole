@@ -26,7 +26,7 @@ export default function ShortcutCheatsheet() {
     >
       <div className="fixed inset-0 z-50 flex items-center justify-center">
         {/* Overlay for background blur */}
-        <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
 
         {/* Modal panel with shortcuts list */}
         <Dialog.Panel className="relative z-10 bg-white dark:bg-gray-900 p-6 rounded-2xl w-full max-w-md shadow-2xl">

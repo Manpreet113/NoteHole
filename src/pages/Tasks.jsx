@@ -49,6 +49,54 @@ async function deleteTaskFromSupabase(id, userId) {
   if (error) throw error;
 }
 
+// --- Offline sync hook ---
+function useTaskSync(userId, addTaskToSupabase, setTasks) {
+  useEffect(() => {
+    function getUnsyncedTasks() {
+      const saved = localStorage.getItem('tasks');
+      if (!saved) return [];
+      try {
+        const arr = JSON.parse(saved);
+        return Array.isArray(arr) ? arr.filter((n) => n.synced === false) : [];
+      } catch {
+        return [];
+      }
+    }
+    function removeSyncedTasks(syncedIds) {
+      const saved = localStorage.getItem('tasks');
+      if (!saved) return;
+      try {
+        const arr = JSON.parse(saved);
+        const filtered = arr.filter((n) => !syncedIds.includes(n.id));
+        localStorage.setItem('tasks', JSON.stringify(filtered));
+      } catch {}
+    }
+    async function syncTasks() {
+      if (!userId || !navigator.onLine) return;
+      const unsynced = getUnsyncedTasks();
+      if (!unsynced.length) return;
+      const syncedIds = [];
+      for (const task of unsynced) {
+        try {
+          const { synced, ...toSave } = task;
+          const saved = await addTaskToSupabase(toSave, userId);
+          setTasks((prev) => [saved, ...prev.filter((n) => n.id !== task.id)]);
+          syncedIds.push(task.id);
+        } catch (e) {}
+      }
+      if (syncedIds.length) removeSyncedTasks(syncedIds);
+    }
+    if (userId && navigator.onLine) {
+      syncTasks();
+    }
+    function handleOnline() {
+      if (userId) syncTasks();
+    }
+    window.addEventListener('online', handleOnline);
+    return () => window.removeEventListener('online', handleOnline);
+  }, [userId, addTaskToSupabase, setTasks]);
+}
+
 function Tasks() {
   const { user, loading: authLoading } = useAuthStore();
   const userId = user?.id;
@@ -67,17 +115,14 @@ function Tasks() {
   // Load tasks from Supabase or localStorage on mount or login/logout
   useEffect(() => {
     if (authLoading) {
-      console.log('Auth still loading, skipping task load');
       return;
     }
     
     const loadTasks = async () => {
       setLoadingFetch(true);
-      console.log('Loading tasks - userId:', userId);
       if (userId) {
         try {
           const data = await fetchTasks(userId);
-          console.log('Loaded tasks from Supabase:', data);
           setTasks(data || []);
         } catch (e) {
           console.error('Failed to fetch tasks from Supabase:', e);
@@ -86,7 +131,6 @@ function Tasks() {
         }
       } else {
         const saved = localStorage.getItem('tasks');
-        console.log('Loading tasks from localStorage:', saved);
         setTasks(saved ? JSON.parse(saved) : []);
       }
       setLoadingFetch(false);
@@ -101,32 +145,30 @@ function Tasks() {
 
   // Persist to localStorage if not logged in
   useEffect(() => {
-    console.log('Tasks useEffect - userId:', userId, 'authLoading:', authLoading, 'tasks count:', tasks.length);
     if (!authLoading && !userId) {
-      console.log('Saving tasks to localStorage:', tasks);
       localStorage.setItem('tasks', JSON.stringify(tasks));
     } else if (authLoading) {
-      console.log('Auth still loading, skipping localStorage save');
+      //
     } else {
-      console.log('User is logged in, not saving to localStorage');
+      //
     }
   }, [tasks, userId, authLoading]);
+
+  useTaskSync(userId, addTaskToSupabase, setTasks);
 
   // Add a new task
   const addTask = async () => {
     if (!newTask.trim()) return;
-    console.log('Adding task - userId:', userId, 'task:', newTask);
     setLoadingAction(true);
     const task = {
       id: crypto.randomUUID(),
       name: newTask,
       is_done: false,
-       created_at: new Date().toISOString(),
+      created_at: new Date().toISOString(),
     };
-    if (userId) {
+    if (userId && navigator.onLine) {
       try {
         const saved = await addTaskToSupabase(task, userId);
-        console.log('Saved task to Supabase:', saved);
         setTasks([saved, ...tasks]);
         toast.success('Task added!');
       } catch (e) {
@@ -134,8 +176,17 @@ function Tasks() {
         toast.error('Failed to add task');
       }
     } else {
-      console.log('Adding task locally:', task);
-      setTasks([task, ...tasks]);
+      // Save locally with synced: false
+      const offlineTask = { ...task, synced: false };
+      const saved = localStorage.getItem('tasks');
+      let arr = [];
+      try {
+        arr = saved ? JSON.parse(saved) : [];
+        if (!Array.isArray(arr)) arr = [];
+      } catch { arr = []; }
+      arr.unshift(offlineTask);
+      localStorage.setItem('tasks', JSON.stringify(arr));
+      setTasks([offlineTask, ...tasks]);
       toast.success('Task added locally!');
     }
     setNewTask('');
@@ -225,14 +276,21 @@ function Tasks() {
   }, [tasks]);
 
   // Filtered tasks based on search and filter
-  const filtered = fuse
-    .search(searchQuery.trim() || '')
-    .map((r) => r.item)
-    .filter((t) => {
-      if (filter === 'pending') return !t.is_done;
-      if (filter === 'Completed') return t.is_done;
-      return true;
-    });
+  const filtered =
+    searchQuery.trim() === ''
+      ? tasks.filter((t) => {
+          if (filter === 'pending') return !t.is_done;
+          if (filter === 'Completed') return t.is_done;
+          return true;
+        })
+      : fuse
+          .search(searchQuery)
+          .map((r) => r.item)
+          .filter((t) => {
+            if (filter === 'pending') return !t.is_done;
+            if (filter === 'Completed') return t.is_done;
+            return true;
+          });
 
   return (
     <div>

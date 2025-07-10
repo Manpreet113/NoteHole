@@ -49,6 +49,54 @@ async function deleteIdeaFromSupabase(id, userId) {
   if (error) throw error;
 }
 
+// --- Offline sync hook ---
+function useIdeaSync(userId, addIdeaToSupabase, setIdeas) {
+  useEffect(() => {
+    function getUnsyncedIdeas() {
+      const saved = localStorage.getItem('ideas');
+      if (!saved) return [];
+      try {
+        const arr = JSON.parse(saved);
+        return Array.isArray(arr) ? arr.filter((n) => n.synced === false) : [];
+      } catch {
+        return [];
+      }
+    }
+    function removeSyncedIdeas(syncedIds) {
+      const saved = localStorage.getItem('ideas');
+      if (!saved) return;
+      try {
+        const arr = JSON.parse(saved);
+        const filtered = arr.filter((n) => !syncedIds.includes(n.id));
+        localStorage.setItem('ideas', JSON.stringify(filtered));
+      } catch {}
+    }
+    async function syncIdeas() {
+      if (!userId || !navigator.onLine) return;
+      const unsynced = getUnsyncedIdeas();
+      if (!unsynced.length) return;
+      const syncedIds = [];
+      for (const idea of unsynced) {
+        try {
+          const { synced, ...toSave } = idea;
+          const saved = await addIdeaToSupabase(toSave, userId);
+          setIdeas((prev) => [saved, ...prev.filter((n) => n.id !== idea.id)]);
+          syncedIds.push(idea.id);
+        } catch (e) {}
+      }
+      if (syncedIds.length) removeSyncedIdeas(syncedIds);
+    }
+    if (userId && navigator.onLine) {
+      syncIdeas();
+    }
+    function handleOnline() {
+      if (userId) syncIdeas();
+    }
+    window.addEventListener('online', handleOnline);
+    return () => window.removeEventListener('online', handleOnline);
+  }, [userId, addIdeaToSupabase, setIdeas]);
+}
+
 function Ideas() {
   const { user, loading: authLoading } = useAuthStore();
   const userId = user?.id;
@@ -68,17 +116,14 @@ function Ideas() {
   // Load ideas from Supabase or localStorage on mount or login/logout
   useEffect(() => {
     if (authLoading) {
-      console.log('Auth still loading, skipping ideas load');
       return;
     }
     
     const loadIdeas = async () => {
       setLoadingFetch(true);
-      console.log('Loading ideas - userId:', userId);
       if (userId) {
         try {
           const data = await fetchIdeas(userId);
-          console.log('Loaded ideas from Supabase:', data);
           setIdeas(data || []);
         } catch (e) {
           console.error('Failed to fetch ideas from Supabase:', e);
@@ -87,7 +132,6 @@ function Ideas() {
         }
       } else {
         const saved = localStorage.getItem('ideas');
-        console.log('Loading ideas from localStorage:', saved);
         setIdeas(saved ? JSON.parse(saved) : []);
       }
       setLoadingFetch(false);
@@ -102,32 +146,30 @@ function Ideas() {
 
   // Persist to localStorage if not logged in
   useEffect(() => {
-    console.log('Ideas useEffect - userId:', userId, 'authLoading:', authLoading, 'ideas count:', ideas.length);
     if (!authLoading && !userId) {
-      console.log('Saving ideas to localStorage:', ideas);
       localStorage.setItem('ideas', JSON.stringify(ideas));
     } else if (authLoading) {
-      console.log('Auth still loading, skipping localStorage save');
+      //
     } else {
-      console.log('User is logged in, not saving to localStorage');
+      //
     }
   }, [ideas, userId, authLoading]);
+
+  useIdeaSync(userId, addIdeaToSupabase, setIdeas);
 
   // Add a new idea
   const addIdea = async () => {
     if (!newTitle.trim()) return;
-    console.log('Adding idea - userId:', userId, 'title:', newTitle);
     setLoadingAction(true);
     const idea = {
       id: crypto.randomUUID(),
       title: newTitle,
       description: newDesc,
-       created_at: new Date().toISOString(),
+      created_at: new Date().toISOString(),
     };
-    if (userId) {
+    if (userId && navigator.onLine) {
       try {
         const saved = await addIdeaToSupabase(idea, userId);
-        console.log('Saved idea to Supabase:', saved);
         setIdeas([saved, ...ideas]);
         toast.success('Idea added!');
       } catch (e) {
@@ -135,8 +177,17 @@ function Ideas() {
         toast.error('Failed to add idea');
       }
     } else {
-      console.log('Adding idea locally:', idea);
-      setIdeas([idea, ...ideas]);
+      // Save locally with synced: false
+      const offlineIdea = { ...idea, synced: false };
+      const saved = localStorage.getItem('ideas');
+      let arr = [];
+      try {
+        arr = saved ? JSON.parse(saved) : [];
+        if (!Array.isArray(arr)) arr = [];
+      } catch { arr = []; }
+      arr.unshift(offlineIdea);
+      localStorage.setItem('ideas', JSON.stringify(arr));
+      setIdeas([offlineIdea, ...ideas]);
       toast.success('Idea added locally!');
     }
     setNewTitle('');
@@ -214,13 +265,6 @@ function Ideas() {
   return (
     <div>
       <h1 className="text-4xl font-bold mb-6">Ideas Board</h1>
-      
-      {/* Debug info */}
-      <div className="mb-4 p-2 bg-yellow-100 dark:bg-yellow-900 text-xs text-black dark:text-white rounded">
-        <strong>Debug:</strong> User ID: {userId || 'null'} | 
-        Ideas count: {ideas.length} | 
-        localStorage: {localStorage.getItem('ideas') ? 'has data' : 'empty'}
-      </div>
       
       {(loadingFetch || loadingAction) && <div className="text-center text-gray-500 mb-4">{loadingFetch ? 'Loading...' : 'Saving...'}</div>}
       {/* New idea input */}
