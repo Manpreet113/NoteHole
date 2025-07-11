@@ -9,7 +9,7 @@ import {
 } from "@headlessui/react";
 import useDarkModeStore from "../store/useDarkModeStore";
 import useAuthStore from '../store/useAuthStore';
-import { Helmet } from ' react-helmet';
+import { Helmet } from 'react-helmet';
 
 // List of core features for display
 const features = [

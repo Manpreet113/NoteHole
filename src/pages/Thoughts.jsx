@@ -8,7 +8,7 @@ import { supabase } from '../components/supabaseClient';
 import FloatingButton from '../components/FloatingButton';
 import toast from 'react-hot-toast';
 import Fuse from 'fuse.js';
-import { Helmet } from ' react-helmet';
+import { Helmet } from 'react-helmet';
 
 // Supabase helpers
 async function fetchThoughts(userId) {
