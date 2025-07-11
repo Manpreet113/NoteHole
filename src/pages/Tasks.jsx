@@ -8,7 +8,7 @@ import useSearchStore from '../store/useSearchStore';
 import { supabase } from '../components/supabaseClient';
 import toast from 'react-hot-toast';
 import Fuse from 'fuse.js';
-import { Helmet } from 'react-helmet-async';
+import { Helmet } from ' react-helmet';
 
 // Supabase helpers
 async function fetchTasks(userId) {
