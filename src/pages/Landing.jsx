@@ -9,6 +9,7 @@ import {
 } from "@headlessui/react";
 import useDarkModeStore from "../store/useDarkModeStore";
 import useAuthStore from '../store/useAuthStore';
+import { Helmet } from 'react-helmet-async';
 
 // List of core features for display
 const features = [
@@ -55,6 +56,18 @@ function Landing() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black text-black dark:text-white flex flex-col items-center">
+      <Helmet>
+        <title>NoteHole – Your Personal Brain Dump</title>
+        <meta name="description" content="NoteHole: Organize your thoughts, tasks, and ideas in one place. Minimalist, fast, and privacy-first note-taking app with offline support and Supabase sync." />
+        <meta property="og:title" content="NoteHole – Your Personal Brain Dump" />
+        <meta property="og:description" content="Organize your thoughts, tasks, and ideas in one place. Minimalist, fast, and privacy-first note-taking app." />
+        <meta property="og:image" content="https://notehole.app/android-chrome-512x512.png" />
+        <meta property="og:url" content="https://notehole.app/" />
+        <meta name="twitter:title" content="NoteHole – Your Personal Brain Dump" />
+        <meta name="twitter:description" content="Organize your thoughts, tasks, and ideas in one place. Minimalist, fast, and privacy-first note-taking app." />
+        <meta name="twitter:image" content="https://notehole.app/android-chrome-512x512.png" />
+        <link rel="canonical" href="https://notehole.app/" />
+      </Helmet>
       {/* Radial Gradient Follower */}
       <div
         className="pointer-events-none fixed inset-0 z-0"
