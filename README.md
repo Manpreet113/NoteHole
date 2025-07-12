@@ -35,6 +35,27 @@ This is not a clone. It’s **NoteHole**. You’ve been warned.
 - Vite
 - Maybe some 💀 spaghetti logic I’ll fix later
 
+## 🔐 Client-Side Encryption
+
+BrainDump now includes **client-side encryption** for all your data:
+
+- **End-to-end encryption**: Your ideas, thoughts, and tasks are encrypted before being stored
+- **User-specific keys**: Each user gets a unique encryption key derived from their credentials
+- **Zero-knowledge**: Even the server can't read your encrypted data
+- **Backward compatible**: Works with existing data and guest users
+
+### How it works:
+1. When you log in, a unique encryption key is generated from your user ID and email
+2. All data is encrypted with AES-256-GCM before being sent to Supabase
+3. Data is also encrypted in localStorage for offline use
+4. Keys are stored locally and cleared on logout
+
+### Environment Variables:
+Add to your `.env` file:
+```
+VITE_ENCRYPTION_SALT=your-secure-salt-here
+```
+
 ## 🚧 Disclaimer
 
 This whole project is a WIP. Expect bugs, weird UI behavior, and maybe a few `console.log("why u no work")` lying around.
