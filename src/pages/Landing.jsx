@@ -59,8 +59,8 @@ function Landing() {
     setPageSEO({
       title: 'NoteHole – Your Personal Brain Dump',
       description: 'NoteHole: Organize your thoughts, tasks, and ideas in one place. Minimalist, fast, and privacy-first note-taking app with offline support and Supabase sync.',
-      image: 'https://notehole.app/android-chrome-512x512.png',
-      url: 'https://notehole.app/',
+      image: 'https://notehole.pages.dev/android-chrome-512x512.png',
+      url: 'https://notehole.pages.dev/',
       canonical: 'https://notehole.pages.dev/'
     });
   }, []);
