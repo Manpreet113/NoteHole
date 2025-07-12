@@ -37,7 +37,7 @@ This is not a clone. It’s **NoteHole**. You’ve been warned.
 
 ## 🔐 Client-Side Encryption
 
-BrainDump now includes **client-side encryption** for all your data:
+NoteHole now includes **client-side encryption** for all your data:
 
 - **End-to-end encryption**: Your ideas, thoughts, and tasks are encrypted before being stored
 - **User-specific keys**: Each user gets a unique encryption key derived from their credentials
@@ -50,12 +50,7 @@ BrainDump now includes **client-side encryption** for all your data:
 3. Data is also encrypted in localStorage for offline use
 4. Keys are stored locally and cleared on logout
 
-### Environment Variables:
-Add to your `.env` file:
-```
-VITE_ENCRYPTION_SALT=your-secure-salt-here
-```
-
+   
 ## 🚧 Disclaimer
 
 This whole project is a WIP. Expect bugs, weird UI behavior, and maybe a few `console.log("why u no work")` lying around.
