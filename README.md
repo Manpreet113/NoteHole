@@ -66,11 +66,6 @@ BrainDump now includes **client-side encryption** for all your data:
 - **Session isolation** - keys cleared on logout
 - **Guest encryption** - even anonymous users get encrypted storage
 
-### Environment Variables:
-Add to your `.env` file:
-```
-VITE_ENCRYPTION_SALT=your-secure-salt-here
-```
 
 ## 🚧 Disclaimer
 
