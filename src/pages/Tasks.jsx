@@ -8,7 +8,7 @@ import useSearchStore from '../store/useSearchStore';
 import { supabase } from '../components/supabaseClient';
 import toast from 'react-hot-toast';
 import Fuse from 'fuse.js';
-import { Helmet } from 'react-helmet';
+import { setPageSEO } from '../utils/seo.js';
 
 // Supabase helpers
 async function fetchTasks(userId) {
@@ -274,6 +274,15 @@ function Tasks() {
     }
   }, [editingId]);
 
+  // Set SEO for Tasks page
+  useEffect(() => {
+    setPageSEO({
+      title: 'Tasks – NoteHole',
+      description: 'Track, complete, and manage your tasks. Minimalist productivity with offline support and instant search.',
+      canonical: 'https://notehole.app/tasks'
+    });
+  }, []);
+
   // Memoized Fuse instance for fuzzy search
   const fuse = useMemo(() => {
     return new Fuse(tasks, {
@@ -301,11 +310,6 @@ function Tasks() {
 
   return (
     <div>
-      <Helmet>
-        <title>Tasks – NoteHole</title>
-        <meta name="description" content="Track, complete, and manage your tasks. Minimalist productivity with offline support and instant search." />
-        <link rel="canonical" href="https://notehole.app/tasks" />
-      </Helmet>
       <h1 className="text-4xl font-bold mb-6">Task Manager</h1>
       {/* Show loading or saving state */}
       {(loadingFetch || loadingAction) && <div className="text-center text-gray-500 mb-4">{loadingFetch ? 'Loading...' : 'Saving...'}</div>}

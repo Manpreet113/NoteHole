@@ -8,7 +8,7 @@ import { supabase } from '../components/supabaseClient';
 import FloatingButton from '../components/FloatingButton';
 import toast from 'react-hot-toast';
 import Fuse from 'fuse.js';
-import { Helmet } from 'react-helmet';
+import { setPageSEO } from '../utils/seo.js';
 
 // Supabase helpers
 async function fetchIdeas(userId) {
@@ -252,6 +252,15 @@ function Ideas() {
     }
   }, [editingId]);
 
+  // Set SEO for Ideas page
+  useEffect(() => {
+    setPageSEO({
+      title: 'Ideas – NoteHole',
+      description: 'Capture, organize, and develop your creative ideas. Visual grid, search, and cross-linking for your next big thing.',
+      canonical: 'https://notehole.app/ideas'
+    });
+  }, []);
+
   // Memoized Fuse instance for fuzzy search
   const fuse = useMemo(() => {
     // Only create Fuse if ideas change
@@ -269,11 +278,6 @@ function Ideas() {
 
   return (
     <div>
-      <Helmet>
-        <title>Ideas – NoteHole</title>
-        <meta name="description" content="Capture, organize, and develop your creative ideas. Visual grid, search, and cross-linking for your next big thing." />
-        <link rel="canonical" href="https://notehole.app/ideas" />
-      </Helmet>
       <h1 className="text-4xl font-bold mb-6">Ideas Board</h1>
       {/* Show loading or saving state */}
       {(loadingFetch || loadingAction) && <div className="text-center text-gray-500 mb-4">{loadingFetch ? 'Loading...' : 'Saving...'}</div>}
