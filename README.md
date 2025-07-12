@@ -75,7 +75,6 @@ But hey — it works. Kinda.
 
 ## ✌️ Credits
 
-Made with zero external help.  
-(Unless you count Stack Overflow, ChatGPT, 3 AM breakdowns, and caffeine.)
+Big thanks to the homie who helped with SEO audits and crafted the whole client-side encryption strategy. You know who you are. 🔐🫡
 
 ---
