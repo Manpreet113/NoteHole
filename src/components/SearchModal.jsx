@@ -115,9 +115,9 @@ export default function SearchModal() {
   return (
     // Modal dialog for search
     <Dialog open={showSearch} onClose={() => setShowSearch(false)} className="fixed z-50 inset-0 overflow-y-auto">
-      <div className="flex items-center justify-center min-h-screen bg-black/40 px-4">
-        <Dialog.Panel className="bg-white/10 backdrop-blur-xl dark:bg-black/20 border border-white/20 dark:border-gray-800 p-6 rounded-2xl w-full max-w-2xl shadow-xl">
-          <Dialog.Title className="text-xl font-semibold mb-4 text-white">
+      <div className="flex items-center justify-center min-h-screen bg-black/40 px-2 sm:px-4">
+        <Dialog.Panel className="bg-white/10 backdrop-blur-xl dark:bg-black/20 border border-white/20 dark:border-gray-800 p-3 sm:p-6 rounded-2xl w-full max-w-xs sm:max-w-2xl shadow-xl">
+          <Dialog.Title className="text-lg sm:text-xl font-semibold mb-4 text-white">
             {/* Modal title */}
             \ud83d\udd0d Search Anything
           </Dialog.Title>
@@ -129,11 +129,11 @@ export default function SearchModal() {
             placeholder="Search tasks, thoughts, ideas..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="w-full p-3 text-white bg-white/5 border border-white/20 rounded-md placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-white/30 mb-4"
+            className="w-full p-2 sm:p-3 text-base sm:text-lg text-white bg-white/5 border border-white/20 rounded-md placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-white/30 mb-4"
           />
 
           {/* Search results with sections */}
-          <div className="max-h-96 overflow-y-auto">
+          <div className="max-h-80 sm:max-h-96 overflow-y-auto">
             {/* No results message */}
             {results.length === 0 && query !== '' && (
               <p className="text-center text-sm text-gray-400 py-4">No results found</p>
@@ -154,10 +154,10 @@ export default function SearchModal() {
                 <div key={type} className="mb-6">
                   {/* Section header */}
                   <div className="flex items-center justify-between mb-3 pb-2 border-b border-white/10">
-                    <h3 className="text-white font-semibold text-sm">
+                    <h3 className="text-white font-semibold text-xs sm:text-sm">
                       {sectionInfo.title}
                     </h3>
-                    <span className="text-xs text-gray-400 bg-white/10 px-2 py-1 rounded-full">
+                    <span className="text-xs text-gray-400 bg-white/10 px-1.5 py-0.5 rounded-full">
                       {sectionInfo.count}
                     </span>
                   </div>
@@ -171,7 +171,7 @@ export default function SearchModal() {
                         className="p-3 rounded-md cursor-pointer bg-white/5 hover:bg-white/10 border border-white/10 transition-colors"
                       >
                         {/* Item title and content preview */}
-                        <div className="text-white font-medium text-sm mb-1">
+                        <div className="text-white font-medium text-xs sm:text-sm mb-1">
                           {item.title}
                         </div>
                         <div className="text-xs text-gray-400 line-clamp-2">
