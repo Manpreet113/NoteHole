@@ -277,130 +277,131 @@ function Ideas() {
       : fuse.search(searchQuery).map((r) => r.item);
 
   return (
-    <div>
+    <div className="min-h-screen bg-gray-50 dark:bg-black text-black dark:text-white flex flex-col text-xs sm:text-base">
       <h1 className="text-4xl font-bold mb-6">Ideas Board</h1>
       {/* Show loading or saving state */}
       {(loadingFetch || loadingAction) && <div className="text-center text-gray-500 mb-4">{loadingFetch ? 'Loading...' : 'Saving...'}</div>}
       {/* New idea input */}
-      <input
-        type="text"
-        value={newTitle}
-        onChange={(e) => setNewTitle(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            addIdea();
-          }
-        }}
-        className="w-full px-4 py-2 bg-white/5 border border-purple-400/40 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-purple-500 mb-4"
-        placeholder="Idea Title"
-        disabled={loadingAction}
-      />
-      <textarea
-        value={newDesc}
-        onChange={(e) => setNewDesc(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' && e.ctrlKey) {
-            e.preventDefault();
-            addIdea();
-          }
-        }}
-        className="w-full px-4 py-2 bg-white/5 border border-purple-400/40 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-        placeholder="Description... (Ctrl+Enter to save)"
-        rows="3"
-        disabled={loadingAction}
-      />
-      {/* Ideas grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-        {filtered.map((idea) => (
-          <div
-            key={idea.id}
-            className="p-4 bg-white/10 dark:bg-white/5 backdrop-blur-md border border-purple-300/10 rounded-lg shadow-md hover:scale-[1.02] hover:shadow-2xl transition duration-300"
+      <main className="flex-1 w-full max-w-xs sm:max-w-3xl mx-auto px-2 sm:px-6 py-6 sm:py-10">
+        <form
+          onSubmit={e => { e.preventDefault(); addIdea(); }}
+          className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-6 sm:mb-8"
+        >
+          <input
+            type="text"
+            placeholder="New idea title..."
+            value={newTitle}
+            onChange={e => setNewTitle(e.target.value)}
+            className="flex-1 px-2 sm:px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-gray-900/70 text-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs sm:text-base"
+            required
+          />
+          <input
+            type="text"
+            placeholder="Description (optional)"
+            value={newDesc}
+            onChange={e => setNewDesc(e.target.value)}
+            className="flex-1 px-2 sm:px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-gray-900/70 text-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs sm:text-base"
+          />
+          <button
+            type="submit"
+            className="bg-purple-600 text-white px-4 sm:px-6 py-2 rounded-lg font-semibold hover:bg-purple-700 transition-colors text-xs sm:text-base"
+            disabled={loadingAction}
           >
-            {editingId === idea.id ? (
-              <div className="space-y-2">
-                {/* Edit idea form */}
-                <input
-                  ref={editTitleRef}
-                  type="text"
-                  value={editTitle}
-                  onChange={(e) => setEditTitle(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      saveEdit(idea.id);
-                    }
-                  }}
-                  className="w-full p-2 bg-purple-100 dark:bg-purple-800 text-black dark:text-white rounded"
-                  disabled={loadingAction}
-                />
-                <textarea
-                  value={editDesc}
-                  onChange={(e) => setEditDesc(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && e.ctrlKey) {
-                      e.preventDefault();
-                      saveEdit(idea.id);
-                    }
-                  }}
-                  className="w-full p-2 bg-purple-100 dark:bg-purple-800 text-black dark:text-white rounded"
-                  rows="3"
-                  disabled={loadingAction}
-                />
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => saveEdit(idea.id)}
-                    className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded"
-                    disabled={loadingAction}
-                  >
-                    Save
-                  </button>
-                  <button
-                    onClick={() => setEditingId(null)}
-                    className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded"
-                    disabled={loadingAction}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <>
-                {/* Render idea title and description */}
-                <h2 className="text-xl font-semibold">{idea.title}</h2>
-                <p className="text-gray-700 dark:text-gray-300">
-                  {parseText(idea.description)}
-                </p>
-                <p className="text-gray-500 text-sm mt-2">
-                  {new Date(idea. created_at).toLocaleString()}
-                </p>
-                <div className="mt-2 flex space-x-2">
-                  {/* Edit button */}
-                  <button
-                    onClick={() => {
-                      setEditingId(idea.id);
-                      setEditTitle(idea.title);
-                      setEditDesc(idea.description);
+            Add
+          </button>
+        </form>
+        {/* Ideas grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+          {filtered.map((idea) => (
+            <div
+              key={idea.id}
+              className="p-4 bg-white/10 dark:bg-white/5 backdrop-blur-md border border-purple-300/10 rounded-lg shadow-md hover:scale-[1.02] hover:shadow-2xl transition duration-300"
+            >
+              {editingId === idea.id ? (
+                <div className="space-y-2">
+                  {/* Edit idea form */}
+                  <input
+                    ref={editTitleRef}
+                    type="text"
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        saveEdit(idea.id);
+                      }
                     }}
-                    className="text-yellow-500 hover:text-yellow-700 text-sm"
+                    className="w-full p-2 bg-purple-100 dark:bg-purple-800 text-black dark:text-white rounded"
                     disabled={loadingAction}
-                  >
-                     e
-                  </button>
-                  {/* Delete button */}
-                  <button
-                    onClick={() => deleteIdea(idea.id)}
-                    className="text-red-400 hover:text-red-600 text-sm"
+                  />
+                  <textarea
+                    value={editDesc}
+                    onChange={(e) => setEditDesc(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && e.ctrlKey) {
+                        e.preventDefault();
+                        saveEdit(idea.id);
+                      }
+                    }}
+                    className="w-full p-2 bg-purple-100 dark:bg-purple-800 text-black dark:text-white rounded"
+                    rows="3"
                     disabled={loadingAction}
-                  >
-                     15
-                  </button>
+                  />
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => saveEdit(idea.id)}
+                      className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded"
+                      disabled={loadingAction}
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={() => setEditingId(null)}
+                      className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded"
+                      disabled={loadingAction}
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </div>
-              </>
-            )}
-          </div>
-        ))}
-      </div>
+              ) : (
+                <>
+                  {/* Render idea title and description */}
+                  <h2 className="text-xl font-semibold">{idea.title}</h2>
+                  <p className="text-gray-700 dark:text-gray-300">
+                    {parseText(idea.description)}
+                  </p>
+                  <p className="text-gray-500 text-sm mt-2">
+                    {new Date(idea. created_at).toLocaleString()}
+                  </p>
+                  <div className="mt-2 flex space-x-2">
+                    {/* Edit button */}
+                    <button
+                      onClick={() => {
+                        setEditingId(idea.id);
+                        setEditTitle(idea.title);
+                        setEditDesc(idea.description);
+                      }}
+                      className="text-yellow-500 hover:text-yellow-700 text-sm"
+                      disabled={loadingAction}
+                    >
+                       e
+                    </button>
+                    {/* Delete button */}
+                    <button
+                      onClick={() => deleteIdea(idea.id)}
+                      className="text-red-400 hover:text-red-600 text-sm"
+                      disabled={loadingAction}
+                    >
+                       15
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          ))}
+        </div>
+      </main>
       {/* Floating add button */}
       <FloatingButton onClick={addIdea} icon="+" label="Add Idea" />
     </div>

@@ -126,9 +126,7 @@ function Thoughts() {
 
   // Load thoughts from Supabase or localStorage on mount or login/logout
   useEffect(() => {
-  if (authLoading || (userId === undefined && user === null)) {
-    return;
-  }
+  if (authLoading) return;
 
   const loadThoughts = async () => {
     setLoadingFetch(true);
@@ -283,31 +281,37 @@ function Thoughts() {
       : fuse.search(searchQuery).map((r) => r.item);
 
   return (
-    <div>
+    <div className="min-h-screen bg-gray-50 dark:bg-black text-black dark:text-white flex flex-col text-xs sm:text-base">
       <h1 className="text-4xl font-bold mb-6">Thoughts Dump Zone</h1>
       {/* Show loading or saving state */}
       {(loadingFetch || loadingAction) && <div className="text-center text-gray-500 mb-4">{loadingFetch ? 'Loading...' : 'Saving...'}</div>}
       {/* New thought input */}
-      <input
-        type="text"
-        value={newThought}
-        onChange={(e) => setNewThought(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            addThought();
-          }
-        }}
-        className="w-full px-4 py-2 bg-white/5 border border-purple-400/40 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-        placeholder="Dump a thought... (e.g., @idea:dark-mode)"
-        disabled={loadingAction}
-      />
+      <form
+        onSubmit={e => { e.preventDefault(); addThought(); }}
+        className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-6 sm:mb-8"
+      >
+        <input
+          type="text"
+          placeholder="New thought..."
+          value={newThought}
+          onChange={e => setNewThought(e.target.value)}
+          className="flex-1 px-2 sm:px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-gray-900/70 text-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs sm:text-base"
+          required
+        />
+        <button
+          type="submit"
+          className="bg-purple-600 text-white px-4 sm:px-6 py-2 rounded-lg font-semibold hover:bg-purple-700 transition-colors text-xs sm:text-base"
+          disabled={loadingAction}
+        >
+          Add
+        </button>
+      </form>
       {/* Thoughts list */}
-      <ul className="space-y-4 mt-6">
+      <ul className="space-y-2 sm:space-y-4">
         {filtered.map((thought) => (
           <li
             key={thought.id}
-            className="bg-white/10 dark:bg-white/5 border border-purple-200/10 backdrop-blur-md p-4 rounded-lg flex items-center justify-between shadow-md"
+            className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-3 sm:p-6 shadow-md flex flex-col gap-1 sm:gap-2"
           >
             {editingId === thought.id ? (
               <div className="flex w-full space-x-2">

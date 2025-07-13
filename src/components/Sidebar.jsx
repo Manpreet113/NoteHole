@@ -20,8 +20,9 @@ function SideBar() {
   // Sidebar and theme state from global store
   const { isExpanded, collapseSidebar } = useSidebarStore();
   const { isDark, toggleDarkMode } = useDarkModeStore();
-  // Local state for tiny screens
-  const [isTinyScreen, setIsTinyScreen] = useState(false);
+  // Remove local state for tiny screens and use Tailwind breakpoints
+  // Remove all isTinyScreen logic and replace with sm: and md: classes
+  // Update SidebarContent and sidebar containers to use responsive padding, font sizes, and visibility
 
   // Navigation links for sidebar
   const links = [
@@ -48,7 +49,7 @@ function SideBar() {
   // Detect tiny screens for responsive UI
   useEffect(() => {
     const handleResize = () => {
-      setIsTinyScreen(window.innerWidth < 400);
+      // setIsTinyScreen(window.innerWidth < 400); // This line is removed
     };
     handleResize();
     window.addEventListener('resize', handleResize);
@@ -57,9 +58,11 @@ function SideBar() {
 
   // Sidebar content (links, theme toggle, login)
   const SidebarContent = () => (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4 p-2 sm:gap-6 sm:p-4">
       {links.map(({ path, label, Icon, activeColor }) => (
-        <Link to={path} key={path} onClick={isTinyScreen ? collapseSidebar : undefined}>
+        <Link to={path} key={path} onClick={() => {
+          if (window.innerWidth < 640) collapseSidebar();
+        }}>
           <div className="flex items-center gap-3">
             <Icon
               strokeWidth={location.pathname === path ? 3 : 2}
@@ -70,7 +73,7 @@ function SideBar() {
               }`}
             />
             <span
-              className={`text-sm font-medium text-white transition-all ${
+              className={`text-xs sm:text-sm font-medium text-white transition-all ${
                 isExpanded ? 'inline-block' : 'hidden group-hover:inline-block'
               }`}
             >
@@ -81,38 +84,39 @@ function SideBar() {
       ))}
 
       {/* Extra controls for mobile sidebar */}
-      {isTinyScreen && (
-  <div className="mt-4 border-t border-white/10 pt-4 space-y-4">
-    {/* 🌙 Theme toggle */}
-    <button
-      onClick={() => toggleDarkMode(!isDark)}
-      className="flex items-center gap-3 text-white hover:text-yellow-300 transition"
-      aria-label="Toggle dark mode"
-    >
-      {isDark ? (
-        <Sun className="w-5 h-5 text-yellow-400" />
-      ) : (
-        <Moon className="w-5 h-5 text-purple-400" />
-      )}
-      <span className="text-sm">Toggle Theme</span>
-    </button>
+      {/* Mobile-only controls (shown in mobile sidebar) */}
+      <div className="sm:hidden">
+        <div className="mt-4 border-t border-white/10 pt-4 space-y-4">
+          {/* 🌙 Theme toggle */}
+          <button
+            onClick={() => toggleDarkMode(!isDark)}
+            className="flex items-center gap-3 text-white hover:text-yellow-300 transition"
+            aria-label="Toggle dark mode"
+          >
+            {isDark ? (
+              <Sun className="w-5 h-5 text-yellow-400" />
+            ) : (
+              <Moon className="w-5 h-5 text-purple-400" />
+            )}
+            <span className="text-sm">Toggle Theme</span>
+          </button>
 
-    {/* 👤 Login link */}
-    <Link to="/login" onClick={collapseSidebar}>
-      <div className="flex items-center gap-3 text-white hover:text-purple-500 transition">
-        <User className="w-5 h-5" />
-        <span className="text-sm">Login</span>
+          {/* 👤 Login link */}
+          <Link to="/login" onClick={collapseSidebar}>
+            <div className="flex items-center gap-3 text-white hover:text-purple-500 transition">
+              <User className="w-5 h-5" />
+              <span className="text-sm">Login</span>
+            </div>
+          </Link>
+        </div>
       </div>
-    </Link>
-  </div>
-)}
 
     </div>
   );
 
   return (
     <>
-      {/* 🖥️ Desktop Sidebar - Always shown */}
+      {/* ��️ Desktop Sidebar - Always shown */}
       <div
         className={`
           hidden sm:block fixed top-1/2 left-0 -translate-y-1/2 z-30 
