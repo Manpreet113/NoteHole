@@ -18,7 +18,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 function SideBar() {
   const location = useLocation();
   // Sidebar and theme state from global store
-  const { isExpanded, collapseSidebar } = useSidebarStore();
+  const { isExpanded, collapseSidebar, toggleSidebar } = useSidebarStore();
   const { isDark, toggleDarkMode } = useDarkModeStore();
   // Remove local state for tiny screens and use Tailwind breakpoints
   // Remove all isTinyScreen logic and replace with sm: and md: classes
@@ -57,40 +57,38 @@ function SideBar() {
   }, []);
 
   // Sidebar content (links, theme toggle, login)
-  const SidebarContent = () => (
+  const SidebarContent = ({ expanded }) => (
     <div className="flex flex-col gap-4 p-2 sm:gap-6 sm:p-4">
       {links.map(({ path, label, Icon, activeColor }) => (
         <Link to={path} key={path} onClick={() => {
           if (window.innerWidth < 640) collapseSidebar();
-        }}>
-          <div className="flex items-center gap-3">
+        }} className={`group flex items-center ${expanded ? 'gap-3 justify-start' : 'gap-0 justify-center'} min-w-0`}>
+          <span className="flex-shrink-0">
             <Icon
               strokeWidth={location.pathname === path ? 3 : 2}
-              className={`h-6 w-6 transition-all ${
+              className={`h-6 w-6 flex-shrink-0 transition-all ${
                 location.pathname === path
                   ? `${activeColor} scale-110`
                   : 'text-white'
               }`}
             />
-            <span
-              className={`text-xs sm:text-sm font-medium text-white transition-all ${
-                isExpanded ? 'inline-block' : 'hidden group-hover:inline-block'
-              }`}
-            >
-              {label}
-            </span>
-          </div>
+          </span>
+          <span
+            className={`text-xs sm:text-sm font-medium text-white transition-all duration-200
+              ${expanded ? 'inline-block' : 'hidden group-hover:inline-block'}
+              whitespace-nowrap`}
+          >
+            {label}
+          </span>
         </Link>
       ))}
-
       {/* Extra controls for mobile sidebar */}
-      {/* Mobile-only controls (shown in mobile sidebar) */}
       <div className="sm:hidden">
         <div className="mt-4 border-t border-white/10 pt-4 space-y-4">
           {/* 🌙 Theme toggle */}
           <button
             onClick={() => toggleDarkMode(!isDark)}
-            className="flex items-center gap-3 text-white hover:text-yellow-300 transition"
+            className="btn btn-ghost btn-sm flex items-center gap-3 text-white hover:text-yellow-300"
             aria-label="Toggle dark mode"
           >
             {isDark ? (
@@ -100,42 +98,50 @@ function SideBar() {
             )}
             <span className="text-sm">Toggle Theme</span>
           </button>
-
           {/* 👤 Login link */}
           <Link to="/login" onClick={collapseSidebar}>
-            <div className="flex items-center gap-3 text-white hover:text-purple-500 transition">
+            <div className="btn btn-ghost btn-sm flex items-center gap-3 text-white hover:text-purple-500">
               <User className="w-5 h-5" />
               <span className="text-sm">Login</span>
             </div>
           </Link>
         </div>
       </div>
-
     </div>
   );
 
+  const [hovered, setHovered] = useState(false);
+  // Only expand on hover for desktop (sm+)
+  const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 640;
+  const expanded = isDesktop ? (isExpanded || hovered) : isExpanded;
+
   return (
     <>
-      {/* ��️ Desktop Sidebar - Always shown */}
-      <div
+      {/* 🖥️ Desktop Sidebar - Always shown */}
+      <motion.div
+        initial={{ width: 60, opacity: 0, x: -20 }}
+        animate={{ width: expanded ? 160 : 60, opacity: 1, x: 0 }}
+        transition={{ type: 'spring', stiffness: 200, damping: 24 }}
         className={`
           hidden sm:block fixed top-1/2 left-0 -translate-y-1/2 z-30 
-          p-4 bg-black/30 backdrop-blur-lg border border-gray-700 rounded-r-2xl 
-          shadow-xl overflow-hidden group transition-all 
-          ${isExpanded ? 'w-40' : 'w-16 hover:w-40'}
+          ${expanded ? 'p-4' : 'py-4 px-2'} bg-black/30 backdrop-blur-lg border border-gray-700 rounded-r-2xl 
+          shadow-xl overflow-hidden transition-all
         `}
+        style={{ width: expanded ? 160 : 60 }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
       >
-        <SidebarContent />
-      </div>
+        <SidebarContent expanded={expanded} />
+      </motion.div>
 
       {/* 📱 Mobile Sidebar - Slide in only when expanded */}
       <AnimatePresence>
         {isExpanded && (
           <motion.div
             key="sidebar-mobile"
-            initial={{ x: '-100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '-100%' }}
+            initial={{ x: '-100%', opacity: 0, scale: 0.98 }}
+            animate={{ x: 0, opacity: 1, scale: 1 }}
+            exit={{ x: '-100%', opacity: 0, scale: 0.98 }}
             transition={{ duration: 0.3, ease: 'easeInOut' }}
             className="sm:hidden fixed top-0 left-0 h-full w-40 z-50 
               bg-black/90 backdrop-blur-xl p-4 shadow-xl border-r border-gray-700"
@@ -148,10 +154,15 @@ function SideBar() {
             >
               <X className="w-5 h-5" />
             </button>
-
-            <div className="mt-10">
-              <SidebarContent />
-            </div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.98 }}
+              transition={{ duration: 0.18 }}
+              className="mt-10"
+            >
+              <SidebarContent expanded={true} />
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

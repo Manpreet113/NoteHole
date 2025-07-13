@@ -153,7 +153,7 @@ function Landing() {
           Your personal mental tracking dashboard — log thoughts, track tasks, organize ideas before they vanish into the void.
         </p>
         <Link to="/thoughts">
-          <button className="bg-purple-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-full text-base sm:text-lg hover:bg-purple-700 transition duration-200">
+          <button className="btn btn-primary btn-lg bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-800">
             Start Organizing Now
           </button>
         </Link>
@@ -239,9 +239,9 @@ function Landing() {
         <button
           onClick={() => toggleDarkMode(!isDark)}
           aria-label="Toggle dark mode"
-          className="mt-4 p-2 rounded-full hover:bg-purple-600 dark:hover:bg-purple-700 transition-colors"
+          className="btn btn-ghost btn-circle mt-4 hover:bg-purple-600 dark:hover:bg-purple-700"
         >
-          <i className={`text-xl ${isDark ? "ri-sun-line text-white" : "ri-moon-line text-black"}`}></i>
+          <i className={`text-xl ${isDark ? "ri-sun-line" : "ri-moon-line"}`}></i>
         </button>
       </footer>
     </div>

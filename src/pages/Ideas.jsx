@@ -1,6 +1,8 @@
 // Ideas.jsx
 // Ideas board page: create, edit, delete, and search ideas (Supabase sync for logged-in users, localStorage for guests)
 import { useState, useEffect, useMemo, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Pencil, Trash2, X } from 'lucide-react';
 import { parseText } from '../utils/parseText';
 import useSearchStore from '../store/useSearchStore';
 import useAuthStore from '../store/useAuthStore';
@@ -109,6 +111,7 @@ function Ideas() {
   const [editDesc, setEditDesc] = useState('');
   const [loadingFetch, setLoadingFetch] = useState(false);
   const [loadingAction, setLoadingAction] = useState(false);
+  const [selectedIdea, setSelectedIdea] = useState(null);
   const editTitleRef = useRef(null);
 
   // Global search query from store
@@ -311,14 +314,19 @@ function Ideas() {
           </button>
         </form>
         {/* Ideas grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6 max-h-[70vh] overflow-y-auto">
           {filtered.map((idea) => (
-            <div
+            <motion.div
               key={idea.id}
-              className="p-4 bg-white/10 dark:bg-white/5 backdrop-blur-md border border-purple-300/10 rounded-lg shadow-md hover:scale-[1.02] hover:shadow-2xl transition duration-300"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 16 }}
+              transition={{ duration: 0.22, ease: 'easeOut' }}
+              className="p-4 bg-white/10 dark:bg-white/5 backdrop-blur-md border border-purple-300/10 rounded-lg shadow-md hover:scale-[1.02] hover:shadow-2xl transition duration-300 cursor-pointer"
+              onClick={() => setSelectedIdea(idea)}
             >
               {editingId === idea.id ? (
-                <div className="space-y-2">
+                <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
                   {/* Edit idea form */}
                   <input
                     ref={editTitleRef}
@@ -365,16 +373,16 @@ function Ideas() {
                   </div>
                 </div>
               ) : (
-                <>
+                <div onClick={(e) => e.stopPropagation()}>
                   {/* Render idea title and description */}
-                  <h2 className="text-xl font-semibold">{idea.title}</h2>
-                  <p className="text-gray-700 dark:text-gray-300">
+                  <h2 className="text-xl font-semibold mb-2 break-words">{idea.title}</h2>
+                  <p className="text-gray-700 dark:text-gray-300 break-words line-clamp-3">
                     {parseText(idea.description)}
                   </p>
                   <p className="text-gray-500 text-sm mt-2">
                     {new Date(idea. created_at).toLocaleString()}
                   </p>
-                  <div className="mt-2 flex space-x-2">
+                  <div className="mt-2 flex space-x-2 items-center">
                     {/* Edit button */}
                     <button
                       onClick={() => {
@@ -382,26 +390,69 @@ function Ideas() {
                         setEditTitle(idea.title);
                         setEditDesc(idea.description);
                       }}
-                      className="text-yellow-500 hover:text-yellow-700 text-sm"
+                      className="btn btn-ghost btn-sm text-yellow-500 hover:text-yellow-700"
                       disabled={loadingAction}
+                      title="Edit"
                     >
-                       e
+                      <Pencil size={18} />
                     </button>
                     {/* Delete button */}
                     <button
                       onClick={() => deleteIdea(idea.id)}
-                      className="text-red-400 hover:text-red-600 text-sm"
+                      className="btn btn-ghost btn-sm text-red-400 hover:text-red-600"
                       disabled={loadingAction}
+                      title="Delete"
                     >
-                       15
+                      <Trash2 size={18} />
                     </button>
                   </div>
-                </>
+                </div>
               )}
-            </div>
+            </motion.div>
           ))}
         </div>
       </main>
+      {/* Idea Detail Modal */}
+      <AnimatePresence>
+        {selectedIdea && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setSelectedIdea(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+              className="bg-white dark:bg-gray-900 rounded-2xl p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-start mb-4">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{selectedIdea.title}</h2>
+                <button
+                  onClick={() => setSelectedIdea(null)}
+                  className="btn btn-ghost btn-circle btn-sm"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="prose dark:prose-invert max-w-none">
+                <div className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                  {parseText(selectedIdea.description)}
+                </div>
+              </div>
+              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <p className="text-sm text-gray-500">
+                  Created: {new Date(selectedIdea.created_at).toLocaleString()}
+                </p>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       {/* Floating add button */}
       <FloatingButton onClick={addIdea} icon="+" label="Add Idea" />
     </div>

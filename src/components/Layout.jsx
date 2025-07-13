@@ -1,6 +1,6 @@
 // Layout.jsx
 // Main layout component: includes sidebar, nav, modals, and page content
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import Nav from "./Nav";
 import Sidebar from "./Sidebar";
@@ -9,8 +9,10 @@ import GlobalHotkeys from "./GlobalHotkeys";
 import SearchModal from "./SearchModal";
 import ShortcutCheatsheet from "./ShortcutCheatsheet";
 import useModalStore from "../store/useModalStore";
+import { AnimatePresence, motion } from 'framer-motion';
 
 const Layout = () => {
+  const location = useLocation();
   // Modal state setters from global store
   const { setShowSearch, setShowCheatsheet } = useModalStore();
 
@@ -37,9 +39,18 @@ const Layout = () => {
         <SearchModal />
         <ShortcutCheatsheet />
         {/* Main routed page content */}
-        <main className="flex-1 overflow-y-auto px-6 md:px-20 lg:px-36 pt-6 pb-20">
-          <Outlet />
-        </main>
+        <AnimatePresence mode="wait">
+          <motion.main
+            key={location.pathname}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -16 }}
+            transition={{ duration: 0.22, ease: 'easeOut' }}
+            className="flex-1 overflow-y-auto px-6 md:px-20 lg:px-36 pt-6 pb-20"
+          >
+            <Outlet />
+          </motion.main>
+        </AnimatePresence>
       </div>
     </div>
   );

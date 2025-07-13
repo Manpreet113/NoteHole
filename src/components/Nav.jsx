@@ -39,13 +39,18 @@ function Nav() {
 
   return (
     // Navigation bar container
-    <nav className="fixed top-0 left-0 w-full z-40 bg-white/30 dark:bg-black/30 backdrop-blur-md border-b border-white/10 shadow-xl">
+    <motion.nav
+      initial={{ y: -32, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ type: 'spring', stiffness: 120, damping: 18 }}
+      className="fixed top-0 left-0 w-full z-40 bg-white/30 dark:bg-black/30 backdrop-blur-md border-b border-white/10 shadow-xl"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between sm:justify-start gap-4">
 
         {/* 🍔 Animated Hamburger → ❌ (mobile only) */}
         <button
           onClick={toggleSidebar}
-          className="p-2 rounded hover:bg-purple-500/80 dark:hover:bg-purple-700 transition-colors focus:outline-none sm:hidden"
+          className="btn btn-ghost btn-sm sm:hidden"
           aria-label="Toggle sidebar"
         >
           <motion.div
@@ -119,9 +124,12 @@ function Nav() {
         {!isTinyScreen && (
           <div className="flex items-center gap-3 relative">
             {/* Theme toggle button */}
-            <button
+            <motion.button
+              whileHover={{ scale: 1.13 }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 18 }}
               onClick={() => toggleDarkMode(!isDark)}
-              className="p-2 rounded-full hover:bg-purple-600 dark:hover:bg-purple-700 transition-colors focus:outline-none"
+              className="btn btn-ghost w-10 h-10 rounded-full hover:bg-purple-600 dark:hover:bg-purple-700"
               aria-label="Toggle dark mode"
             >
               {isDark ? (
@@ -129,13 +137,16 @@ function Nav() {
               ) : (
                 <i className="ri-moon-line text-xl" />
               )}
-            </button>
+            </motion.button>
             {/* User avatar or login button */}
             {user ? (
               <div className="relative">
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.08 }}
+                  whileTap={{ scale: 0.96 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 18 }}
                   onClick={() => setShowMenu((v) => !v)}
-                  className="w-9 h-9 bg-purple-600 dark:bg-purple-700 rounded-full flex items-center justify-center text-white hover:bg-purple-800 transition cursor-pointer focus:outline-none"
+                  className="btn btn-primary w-10 h-10 rounded-full bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-800"
                   aria-label="User menu"
                 >
                   {user.user_metadata?.avatar_url ? (
@@ -152,10 +163,16 @@ function Nav() {
                         : <i className="ri-user-line" />}
                     </span>
                   )}
-                </button>
+                </motion.button>
                 {/* Dropdown menu for user actions */}
                 {showMenu && (
-                  <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
+                  <motion.div
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.18 }}
+                    className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50"
+                  >
                     <div className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200 border-b border-gray-100 dark:border-gray-800">
                       {user.user_metadata?.full_name || user.email}
                     </div>
@@ -165,20 +182,25 @@ function Nav() {
                     >
                       Logout
                     </button>
-                  </div>
+                  </motion.div>
                 )}
               </div>
             ) : (
               <Link to="/login" aria-label="Login">
-                <div className="w-9 h-9 bg-purple-600 dark:bg-purple-700 rounded-full flex items-center justify-center text-white hover:bg-purple-800 transition cursor-pointer">
+                <motion.button
+                  whileHover={{ scale: 1.08 }}
+                  whileTap={{ scale: 0.96 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 18 }}
+                  className="btn btn-primary w-10 h-10 rounded-full bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-800"
+                >
                   <i className="ri-user-line" />
-                </div>
+                </motion.button>
               </Link>
             )}
           </div>
         )}
       </div>
-    </nav>
+    </motion.nav>
   );
 }
 

@@ -101,7 +101,7 @@ export default function LoginForm() {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              className="btn btn-ghost btn-sm absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2"
             >
               {/* Toggle password visibility icon */}
               {showPassword ? '\ud83d\ude48' : '\ud83d\udc41\ufe0f'}
@@ -112,7 +112,7 @@ export default function LoginForm() {
         <button
           onClick={authMode === 'login' ? handleLogin : handleSignup}
           disabled={loading}
-          className="w-full mt-4 px-4 py-2 text-white font-medium bg-indigo-600 hover:bg-indigo-500 rounded-lg duration-150 text-base sm:text-lg"
+          className="btn btn-primary w-full mt-4"
         >
           {loading ? 'Please wait...' : authMode === 'login' ? 'Sign In' : 'Sign Up'}
         </button>
@@ -144,14 +144,14 @@ export default function LoginForm() {
         <div className="space-y-4 text-xs sm:text-sm font-medium">
           <button
             onClick={() => handleOAuth('google')}
-            className="w-full font-bold flex items-center justify-center gap-x-3 py-2.5 border rounded-lg bg-white hover:bg-gray-50 active:bg-gray-100"
+            className="btn btn-outline w-full"
           >
             <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-5 h-5" alt="google" />
             Continue with Google
           </button>
           <button
             onClick={() => handleOAuth('github')}
-            className="w-full flex font-bold items-center justify-center gap-x-3 py-2.5 border rounded-lg bg-white hover:bg-gray-50 active:bg-gray-100"
+            className="btn btn-outline w-full"
           >
             <img src="https://www.svgrepo.com/show/512317/github-142.svg" className="w-5 h-5" alt="github" />
             Continue with Github

@@ -2,6 +2,7 @@
    Global styles, font imports, and theme variables for the app
 */
 @import "tailwindcss";
+@import "daisyui";
 @import 'remixicon/fonts/remixicon.css';
 
 @custom-variant dark (&:where(.dark, .dark *));
@@ -9,6 +10,26 @@
 :root {
     --font-primary: 'DM Sans', sans-serif;
     --font-secondary: 'Raleway', sans-serif;
+    
+    /* Custom purple accent colors for daisyUI */
+    --p: 168 85 247; /* Purple primary */
+    --pf: 147 51 234; /* Purple focus */
+    --pc: 255 255 255; /* Purple content (text) */
+    
+    /* Override daisyUI primary colors with purple */
+    --primary: 168 85 247;
+    --primary-focus: 147 51 234;
+    --primary-content: 255 255 255;
+    
+    /* Secondary colors for accent */
+    --secondary: 147 51 234;
+    --secondary-focus: 126 34 206;
+    --secondary-content: 255 255 255;
+    
+    /* Accent color for highlights */
+    --accent: 168 85 247;
+    --accent-focus: 147 51 234;
+    --accent-content: 255 255 255;
   }
   
   body {

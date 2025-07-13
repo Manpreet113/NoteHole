@@ -1,6 +1,8 @@
 // Thoughts.jsx
 // Thoughts dump page: create, edit, delete, and search thoughts (Supabase sync for logged-in users, localStorage for guests)
 import { useState, useEffect, useMemo, useRef } from 'react';
+import { motion } from 'framer-motion';
+import { Pencil, Trash2 } from 'lucide-react';
 import { parseText } from '../utils/parseText';
 import useSearchStore from '../store/useSearchStore';
 import useAuthStore from '../store/useAuthStore';
@@ -309,8 +311,12 @@ function Thoughts() {
       {/* Thoughts list */}
       <ul className="space-y-2 sm:space-y-4">
         {filtered.map((thought) => (
-          <li
+          <motion.li
             key={thought.id}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 16 }}
+            transition={{ duration: 0.22, ease: 'easeOut' }}
             className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-3 sm:p-6 shadow-md flex flex-col gap-1 sm:gap-2"
           >
             {editingId === thought.id ? (
@@ -355,30 +361,32 @@ function Thoughts() {
                     ({new Date(thought. created_at).toLocaleString()})
                   </span>
                 </span>
-                <div className="space-x-2">
+                <div className="space-x-2 flex items-center">
                   {/* Edit button */}
                   <button
                     onClick={() => {
                       setEditingId(thought.id);
                       setEditText(thought.thought);
                     }}
-                    className="text-yellow-400 hover:text-yellow-600 text-sm"
+                    className="btn btn-ghost btn-sm text-yellow-400 hover:text-yellow-600"
                     disabled={loadingAction}
+                    title="Edit"
                   >
-                    ✎
+                    <Pencil size={18} />
                   </button>
                   {/* Delete button */}
                   <button
                     onClick={() => deleteThought(thought.id)}
-                    className="text-red-400 hover:text-red-600 text-sm"
+                    className="btn btn-ghost btn-sm text-red-400 hover:text-red-600"
                     disabled={loadingAction}
+                    title="Delete"
                   >
-                    ✕
+                    <Trash2 size={18} />
                   </button>
                 </div>
               </>
             )}
-          </li>
+          </motion.li>
         ))}
       </ul>
       {/* Floating add button */}

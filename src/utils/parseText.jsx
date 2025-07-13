@@ -48,7 +48,7 @@ export function parseText(text, data = null) {
   let result = [];
   lines.forEach((line, lineIdx) => {
     let parts = [];
-    let lastIndex = 0;
+  let lastIndex = 0;
     // Mentions first (so they don't conflict with markdown or URLs)
     while (true) {
       const match = mentionRegex.exec(line);
@@ -59,13 +59,13 @@ export function parseText(text, data = null) {
       let found = null;
       let to = '#';
       let display = customText || match[0];
-      if (type === 'thought') {
+    if (type === 'thought') {
         found = thoughts.find((t) => slugify(t.thought) === slug);
         if (found) {
           to = `/thoughts#${found.id}`;
           display = customText || `@thought:${slug}`;
-        }
-      } else if (type === 'idea') {
+      }
+    } else if (type === 'idea') {
         found = ideas.find((i) => slugify(i.title) === slug);
         if (found) {
           to = `/ideas#${found.id}`;
