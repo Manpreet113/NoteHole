@@ -2,7 +2,7 @@
    Global styles, font imports, and theme variables for the app
 */
 @import "tailwindcss";
-@import "daisyui";
+@plugin "daisyui";
 @import 'remixicon/fonts/remixicon.css';
 
 @custom-variant dark (&:where(.dark, .dark *));
