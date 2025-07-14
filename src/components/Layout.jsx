@@ -1,5 +1,3 @@
-// Layout.jsx
-// Main layout component: includes sidebar, nav, modals, and page content
 import { Outlet, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import Nav from "./Nav";
@@ -30,7 +28,7 @@ const Layout = () => {
 
   return (
     // Main app layout: sidebar, nav, modals, and routed content
-    <div className="mt-15 flex h-screen relative bg-gray-50 dark:bg-black text-black dark:text-white">
+    <div className="pt-15 overflow-x-hidden flex h-screen relative bg-gray-50 dark:bg-black text-black dark:text-white">
       <GradientBackground />
       <Sidebar />
       <div className="flex flex-col flex-1 relative z-10">
@@ -50,6 +48,7 @@ const Layout = () => {
           >
             <Outlet />
           </motion.main>
+          
         </AnimatePresence>
       </div>
     </div>

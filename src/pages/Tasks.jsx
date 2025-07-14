@@ -1,5 +1,3 @@
-// Tasks.jsx
-// Task manager page: create, complete, delete, and filter tasks (Supabase sync for logged-in users, localStorage for guests)
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Pencil, Trash2 } from 'lucide-react';
@@ -281,7 +279,7 @@ function Tasks() {
     setPageSEO({
       title: 'Tasks – NoteHole',
       description: 'Track, complete, and manage your tasks. Minimalist productivity with offline support and instant search.',
-      canonical: 'https://notehole.app/tasks'
+      canonical: 'https://notehole.pages.dev/tasks'
     });
   }, []);
 
@@ -311,7 +309,7 @@ function Tasks() {
           });
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-black text-black dark:text-white flex flex-col text-xs sm:text-base">
+    <div className="min-h-screen text-black dark:text-white flex flex-col text-xs sm:text-base">
       <h1 className="text-4xl font-bold mb-6">Task Manager</h1>
       {/* Show loading or saving state */}
       {(loadingFetch || loadingAction) && <div className="text-center text-gray-500 mb-4">{loadingFetch ? 'Loading...' : 'Saving...'}</div>}

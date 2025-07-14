@@ -127,7 +127,7 @@ export default function SearchModal() {
             >
               <Dialog.Title className="text-lg sm:text-xl font-semibold mb-4 text-white">
                 {/* Modal title */}
-                \ud83d\udd0d Search Anything
+                 Search Anything
               </Dialog.Title>
               {/* Search input */}
               <input

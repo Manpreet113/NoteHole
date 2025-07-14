@@ -1,5 +1,3 @@
-// Thoughts.jsx
-// Thoughts dump page: create, edit, delete, and search thoughts (Supabase sync for logged-in users, localStorage for guests)
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Pencil, Trash2 } from 'lucide-react';
@@ -264,7 +262,7 @@ function Thoughts() {
     setPageSEO({
       title: 'Thoughts – NoteHole',
       description: 'Quickly jot down and organize your fleeting thoughts. Search, edit, and sync your brain dumps with NoteHole.',
-      canonical: 'https://notehole.app/thoughts'
+      canonical: 'https://notehole.pages.dev/thoughts'
     });
   }, []);
 
@@ -283,7 +281,7 @@ function Thoughts() {
       : fuse.search(searchQuery).map((r) => r.item);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-black text-black dark:text-white flex flex-col text-xs sm:text-base">
+    <div className="min-h-screen text-black dark:text-white flex flex-col text-xs sm:text-base">
       <h1 className="text-4xl font-bold mb-6">Thoughts Dump Zone</h1>
       {/* Show loading or saving state */}
       {(loadingFetch || loadingAction) && <div className="text-center text-gray-500 mb-4">{loadingFetch ? 'Loading...' : 'Saving...'}</div>}

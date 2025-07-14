@@ -43,7 +43,7 @@ export default function ShortcutCheatsheet() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.18, ease: 'easeOut' }}
-              className="relative z-10 bg-white dark:bg-gray-900 p-3 sm:p-6 rounded-2xl w-full max-w-xs sm:max-w-md shadow-2xl"
+              className="relative z-10 bg-white dark:bg-gray-900 p-3 sm:p-6 rounded-2xl w-full text-black dark:text-white max-w-xs sm:max-w-md shadow-2xl"
             >
               <Dialog.Title className="text-lg sm:text-xl font-semibold mb-4">
                 {/* Keyboard icon and title */}

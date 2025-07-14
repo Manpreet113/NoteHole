@@ -1,5 +1,3 @@
-// Landing.jsx
-// Landing page for NoteHole: hero, features, FAQ, and theme toggle
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import {

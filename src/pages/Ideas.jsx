@@ -1,8 +1,6 @@
-// Ideas.jsx
-// Ideas board page: create, edit, delete, and search ideas (Supabase sync for logged-in users, localStorage for guests)
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Pencil, Trash2, X } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Pencil, Trash2 } from 'lucide-react';
 import { parseText } from '../utils/parseText';
 import useSearchStore from '../store/useSearchStore';
 import useAuthStore from '../store/useAuthStore';
@@ -111,7 +109,6 @@ function Ideas() {
   const [editDesc, setEditDesc] = useState('');
   const [loadingFetch, setLoadingFetch] = useState(false);
   const [loadingAction, setLoadingAction] = useState(false);
-  const [selectedIdea, setSelectedIdea] = useState(null);
   const editTitleRef = useRef(null);
 
   // Global search query from store
@@ -260,7 +257,7 @@ function Ideas() {
     setPageSEO({
       title: 'Ideas – NoteHole',
       description: 'Capture, organize, and develop your creative ideas. Visual grid, search, and cross-linking for your next big thing.',
-      canonical: 'https://notehole.app/ideas'
+      canonical: 'https://notehole.pages.dev/ideas'
     });
   }, []);
 
@@ -280,12 +277,12 @@ function Ideas() {
       : fuse.search(searchQuery).map((r) => r.item);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-black text-black dark:text-white flex flex-col text-xs sm:text-base">
+    <div className="min-h-screen text-black dark:text-white flex flex-col text-xs sm:text-base">
       <h1 className="text-4xl font-bold mb-6">Ideas Board</h1>
       {/* Show loading or saving state */}
       {(loadingFetch || loadingAction) && <div className="text-center text-gray-500 mb-4">{loadingFetch ? 'Loading...' : 'Saving...'}</div>}
       {/* New idea input */}
-      <main className="flex-1 w-full max-w-xs sm:max-w-3xl mx-auto px-2 sm:px-6 py-6 sm:py-10">
+      <main className="flex-1 w-full max-w-xs sm:max-w-3xl lg:max-w-6xl mx-auto px-2 sm:px-6 py-6 sm:py-10">
         <form
           onSubmit={e => { e.preventDefault(); addIdea(); }}
           className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-6 sm:mb-8"
@@ -314,7 +311,7 @@ function Ideas() {
           </button>
         </form>
         {/* Ideas grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6 max-h-[70vh] overflow-y-auto">
+        <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 space-y-4 mt-6">
           {filtered.map((idea) => (
             <motion.div
               key={idea.id}
@@ -322,8 +319,7 @@ function Ideas() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 16 }}
               transition={{ duration: 0.22, ease: 'easeOut' }}
-              className="p-4 bg-white/10 dark:bg-white/5 backdrop-blur-md border border-purple-300/10 rounded-lg shadow-md hover:scale-[1.02] hover:shadow-2xl transition duration-300 cursor-pointer"
-              onClick={() => setSelectedIdea(idea)}
+              className="break-inside-avoid mb-4 p-4 bg-white/10 dark:bg-white/5 backdrop-blur-md border border-purple-300/10 rounded-lg shadow-md hover:scale-[1.02] hover:shadow-2xl transition duration-300 cursor-pointer"
             >
               {editingId === idea.id ? (
                 <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
@@ -339,7 +335,7 @@ function Ideas() {
                         saveEdit(idea.id);
                       }
                     }}
-                    className="w-full p-2 bg-purple-100 dark:bg-purple-800 text-black dark:text-white rounded"
+                    className="w-full p-2 bg-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-800 text-black dark:text-white rounded"
                     disabled={loadingAction}
                   />
                   <textarea
@@ -351,7 +347,7 @@ function Ideas() {
                         saveEdit(idea.id);
                       }
                     }}
-                    className="w-full p-2 bg-purple-100 dark:bg-purple-800 text-black dark:text-white rounded"
+                    className="w-full p-2 bg-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 text-black dark:text-white rounded"
                     rows="3"
                     disabled={loadingAction}
                   />
@@ -375,8 +371,8 @@ function Ideas() {
               ) : (
                 <div onClick={(e) => e.stopPropagation()}>
                   {/* Render idea title and description */}
-                  <h2 className="text-xl font-semibold mb-2 break-words">{idea.title}</h2>
-                  <p className="text-gray-700 dark:text-gray-300 break-words line-clamp-3">
+                  <h2 className="text-xl font-semibold mb-2 break-words break-all whitespace-pre-wrap">{idea.title}</h2>
+                  <p className="text-gray-700 dark:text-gray-300 break-words break-all whitespace-pre-wrap overflow-hidden">
                     {parseText(idea.description)}
                   </p>
                   <p className="text-gray-500 text-sm mt-2">
@@ -412,47 +408,6 @@ function Ideas() {
           ))}
         </div>
       </main>
-      {/* Idea Detail Modal */}
-      <AnimatePresence>
-        {selectedIdea && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-            onClick={() => setSelectedIdea(null)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              className="bg-white dark:bg-gray-900 rounded-2xl p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex justify-between items-start mb-4">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{selectedIdea.title}</h2>
-                <button
-                  onClick={() => setSelectedIdea(null)}
-                  className="btn btn-ghost btn-circle btn-sm"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-              <div className="prose dark:prose-invert max-w-none">
-                <div className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
-                  {parseText(selectedIdea.description)}
-                </div>
-              </div>
-              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                <p className="text-sm text-gray-500">
-                  Created: {new Date(selectedIdea.created_at).toLocaleString()}
-                </p>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
       {/* Floating add button */}
       <FloatingButton onClick={addIdea} icon="+" label="Add Idea" />
     </div>
