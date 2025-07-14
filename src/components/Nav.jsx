@@ -246,7 +246,7 @@ function Nav() {
                   transition={{ type: 'spring', stiffness: 300, damping: 18 }}
                   onClick={() => setShowMenu((v) => !v)}
                   className="btn btn-ghost w-10 h-10 p-0 rounded-full hover:bg-purple-600 dark:hover:bg-purple-700"
-                  aria-label="User menu"
+                  aria-label="Open user menu"
                 >
                   <div className="avatar">
                     <div className={`w-9 rounded-full bg-neutral text-neutral-content${user.user_metadata?.avatar_url ? '' : ' avatar-placeholder'}`}> 

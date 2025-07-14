@@ -30,7 +30,9 @@ const Layout = () => {
     // Main app layout: sidebar, nav, modals, and routed content
     <div className="pt-15 overflow-x-hidden flex h-screen relative bg-gray-50 dark:bg-black text-black dark:text-white">
       <GradientBackground />
-      <Sidebar />
+      <nav aria-label="Sidebar Navigation">
+        <Sidebar />
+      </nav>
       <div className="flex flex-col flex-1 relative z-10">
         <Nav />
         <GlobalHotkeys />

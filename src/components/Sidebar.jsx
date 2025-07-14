@@ -58,30 +58,34 @@ function SideBar() {
 
   // Sidebar content (links, theme toggle, login)
   const SidebarContent = ({ expanded }) => (
-    <div className="flex flex-col gap-4 p-2 sm:gap-6 sm:p-4">
-      {links.map(({ path, label, Icon, activeColor }) => (
-        <Link to={path} key={path} onClick={() => {
-          if (window.innerWidth < 640) collapseSidebar();
-        }} className={`group flex items-center ${expanded ? 'gap-3 justify-start' : 'gap-0 justify-center'} min-w-0`}>
-          <span className="flex-shrink-0">
-            <Icon
-              strokeWidth={location.pathname === path ? 3 : 2}
-              className={`h-6 w-6 flex-shrink-0 transition-all ${
-                location.pathname === path
-                  ? `${activeColor} scale-110`
-                  : 'text-white'
-              }`}
-            />
-          </span>
-          <span
-            className={`text-xs sm:text-sm font-medium text-white transition-all duration-200
-              ${expanded ? 'inline-block' : 'hidden group-hover:inline-block'}
-              whitespace-nowrap`}
-          >
-            {label}
-          </span>
-        </Link>
-      ))}
+    <nav aria-label="Sidebar Navigation">
+      <ul className="flex flex-col gap-4 p-2 sm:gap-6 sm:p-4">
+        {links.map(({ path, label, Icon, activeColor }) => (
+          <li key={path}>
+            <Link to={path} onClick={() => {
+              if (window.innerWidth < 640) collapseSidebar();
+            }} className={`group flex items-center ${expanded ? 'gap-3 justify-start' : 'gap-0 justify-center'} min-w-0`}>
+              <span className="flex-shrink-0">
+                <Icon
+                  strokeWidth={location.pathname === path ? 3 : 2}
+                  className={`h-6 w-6 flex-shrink-0 transition-all ${
+                    location.pathname === path
+                      ? `${activeColor} scale-110`
+                      : 'text-white'
+                  }`}
+                />
+              </span>
+              <span
+                className={`text-xs sm:text-sm font-medium text-white transition-all duration-200
+                  ${expanded ? 'inline-block' : 'hidden group-hover:inline-block'}
+                  whitespace-nowrap`}
+              >
+                {label}
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
       {/* Extra controls for mobile sidebar */}
       <div className="sm:hidden">
         <div className="mt-4 border-t border-white/10 pt-4 space-y-4">
@@ -107,7 +111,7 @@ function SideBar() {
           </Link>
         </div>
       </div>
-    </div>
+    </nav>
   );
 
   const [hovered, setHovered] = useState(false);
