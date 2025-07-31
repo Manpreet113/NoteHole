@@ -4,10 +4,13 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { parseText } from '../utils/parseText';
 import useSearchStore from '../store/useSearchStore';
 import useAuthStore from '../store/useAuthStore';
+import useThoughtsStore from '../store/useThoughtsStore';
 import { supabase } from '../components/supabaseClient';
 import FloatingButton from '../components/FloatingButton';
 import toast from 'react-hot-toast';
 import Fuse from 'fuse.js';
+import { encryptData, decryptData } from '../utils/e2ee';
+import { Pencil, Trash2 } from 'lucide-react';
 
 // Supabase helpers
 async function fetchThoughts(userId) {
@@ -110,161 +113,61 @@ function useNoteSync(userId, addThoughtToSupabase, setThoughts) {
 }
 
 function Thoughts() {
-  const { user, loading: authLoading } = useAuthStore();
+  // All hooks at the top
+  const { user, loading: authLoading, e2eeKey } = useAuthStore();
   const userId = user?.id;
-  const [thoughts, setThoughts] = useState([]);
+  const { thoughts, loading, dataReady, fetchThoughts, addThought, editThought, deleteThought, reset } = useThoughtsStore();
   const [newThought, setNewThought] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState('');
-  const [loadingFetch, setLoadingFetch] = useState(false);
-  const [loadingAction, setLoadingAction] = useState(false);
   const editInputRef = useRef(null);
-
-  // Global search query from store
   const { searchQuery, setThoughts: setSearchThoughts } = useSearchStore();
 
-  // Load thoughts from Supabase or localStorage on mount or login/logout
   useEffect(() => {
-  if (authLoading || (userId === undefined && user === null)) {
-    return;
-  }
-
-  const loadThoughts = async () => {
-    setLoadingFetch(true);
-    if (userId) {
-      try {
-        const data = await fetchThoughts(userId);
-        setThoughts(data || []);
-      } catch (e) {
-        console.error('Failed to fetch thoughts from Supabase:', e);
-        setThoughts([]);
-        toast.error('Failed to fetch thoughts from Supabase');
-      }
+    if (authLoading) return;
+    if (userId && !e2eeKey) return;
+    if (userId && e2eeKey) {
+      fetchThoughts();
     } else {
-      const saved = localStorage.getItem('thoughts');
-      setThoughts(saved ? JSON.parse(saved) : []);
+      reset();
     }
-    setLoadingFetch(false);
-  };
+  }, [userId, e2eeKey, authLoading, fetchThoughts, reset]);
 
-  loadThoughts();
-}, [userId, authLoading]);
-
-  // Sync thoughts with search store whenever thoughts change
   useEffect(() => {
     setSearchThoughts(thoughts);
   }, [thoughts, setSearchThoughts]);
 
-  // Persist to localStorage if not logged in
-  useEffect(() => {
-  if (!authLoading && !userId) {
-    const isHydrated = JSON.parse(localStorage.getItem('thoughts') || '[]');
-
-    // Only save if there's something to actually persist
-    if (thoughts.length > 0) {
-      localStorage.setItem('thoughts', JSON.stringify(thoughts));
-    }
-
-    // Optional: prevent overwriting if data already exists
-    else if (isHydrated.length > 0) {
-      // Don't overwrite localStorage with empty state
-    }
-  }
-}, [thoughts, userId, authLoading]);
-
-  // Add offline sync logic
-  useNoteSync(userId, addThoughtToSupabase, setThoughts);
-
-  // Add a new thought (handles both online and offline)
-  const addThought = async () => {
-    if (!newThought.trim()) return;
-    setLoadingAction(true);
-    const thought = {
-      id: crypto.randomUUID(),
-      thought: newThought,
-      created_at: new Date().toISOString(),
-    };
-    if (userId && navigator.onLine) {
-      try {
-        const saved = await addThoughtToSupabase(thought, userId);
-        setThoughts([saved, ...thoughts]);
-        toast.success('Thought added!');
-      } catch (e) {
-        console.error('Failed to add thought to Supabase:', e);
-        toast.error('Failed to add thought');
-      }
-    } else {
-      // Save locally with synced: false
-      const offlineThought = { ...thought, synced: false };
-      const saved = localStorage.getItem('thoughts');
-      let arr = [];
-      try {
-        arr = saved ? JSON.parse(saved) : [];
-        if (!Array.isArray(arr)) arr = [];
-      } catch { arr = []; }
-      arr.unshift(offlineThought);
-      localStorage.setItem('thoughts', JSON.stringify(arr));
-      setThoughts([offlineThought, ...thoughts]);
-      toast.success('Thought added locally!');
-    }
-    setNewThought('');
-    setLoadingAction(false);
-  };
-
-  // Save edits to a thought (handles both online and offline)
-  const saveEdit = async (id) => {
-    setLoadingAction(true);
-    if (userId) {
-      try {
-        const updated = await updateThoughtInSupabase({ id, thought: editText }, userId);
-        setThoughts(thoughts.map((t) => (t.id === id ? updated : t)));
-        toast.success('Thought updated!');
-      } catch (e) {
-        toast.error('Failed to update thought');
-      }
-    } else {
-      setThoughts(
-        thoughts.map((t) => (t.id === id ? { ...t, thought: editText } : t))
-      );
-      toast.success('Thought updated locally!');
-    }
-    setEditingId(null);
-    setEditText('');
-    setLoadingAction(false);
-  };
-
-  // Delete a thought (handles both online and offline)
-  const deleteThought = async (id) => {
-    setLoadingAction(true);
-    if (userId) {
-      try {
-        await deleteThoughtFromSupabase(id, userId);
-        setThoughts(thoughts.filter((t) => t.id !== id));
-        toast.success('Thought deleted!');
-      } catch (e) {
-        toast.error('Failed to delete thought');
-      }
-    } else {
-      setThoughts(thoughts.filter((t) => t.id !== id));
-      toast.success('Thought deleted locally!');
-    }
-    setLoadingAction(false);
-  };
-
-  // Focus edit input when editing
   useEffect(() => {
     if (editingId && editInputRef.current) {
       editInputRef.current.focus();
     }
   }, [editingId]);
 
-  // Memoized Fuse instance for fuzzy search
   const fuse = useMemo(() => {
     return new Fuse(thoughts, {
       keys: ['thought'],
       threshold: 0.3,
     });
   }, [thoughts]);
+
+  // Only render after all hooks
+  if (authLoading || (userId && !e2eeKey) || !dataReady) {
+    return <div className="text-center text-gray-500 mb-4">Loading...</div>;
+  }
+
+  // Add a new thought
+  const handleAddThought = async () => {
+    if (!newThought.trim()) return;
+    await addThought(newThought);
+    setNewThought('');
+  };
+
+  // Save edits to a thought
+  const handleSaveEdit = async (id) => {
+    await editThought(id, editText);
+    setEditingId(null);
+    setEditText('');
+  };
 
   // Filtered thoughts based on search query
   const filtered =
@@ -276,7 +179,7 @@ function Thoughts() {
     <div>
       <h1 className="text-4xl font-bold mb-6">Thoughts Dump Zone</h1>
       {/* Show loading or saving state */}
-      {(loadingFetch || loadingAction) && <div className="text-center text-gray-500 mb-4">{loadingFetch ? 'Loading...' : 'Saving...'}</div>}
+      {loading && <div className="text-center text-gray-500 mb-4">Saving...</div>}
       {/* New thought input */}
       <input
         type="text"
@@ -285,12 +188,12 @@ function Thoughts() {
         onKeyDown={(e) => {
           if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            addThought();
+            handleAddThought();
           }
         }}
         className="w-full px-4 py-2 bg-white/5 border border-purple-400/40 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-purple-500"
         placeholder="Dump a thought... (e.g., @idea:dark-mode)"
-        disabled={loadingAction}
+        disabled={loading}
       />
       {/* Thoughts list */}
       <ul className="space-y-4 mt-6">
@@ -308,26 +211,25 @@ function Thoughts() {
                   value={editText}
                   onChange={(e) => setEditText(e.target.value)}
                   onKeyDown={(e) => {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    saveEdit(thought.id);
-  }
-}}
-
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSaveEdit(thought.id);
+                    }
+                  }}
                   className="flex-1 p-2 bg-purple-700 text-white rounded"
-                  disabled={loadingAction}
+                  disabled={loading}
                 />
                 <button
-                  onClick={() => saveEdit(thought.id)}
+                  onClick={() => handleSaveEdit(thought.id)}
                   className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded"
-                  disabled={loadingAction}
+                  disabled={loading}
                 >
                   Save
                 </button>
                 <button
                   onClick={() => setEditingId(null)}
                   className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded"
-                  disabled={loadingAction}
+                  disabled={loading}
                 >
                   Cancel
                 </button>
@@ -338,7 +240,7 @@ function Thoughts() {
                 <span>
                   {parseText(thought.thought)}{' '}
                   <span className="text-gray-400 text-sm">
-                    ({new Date(thought. created_at).toLocaleString()})
+                    ({new Date(thought.created_at).toLocaleString()})
                   </span>
                 </span>
                 <div className="space-x-2">
@@ -349,17 +251,17 @@ function Thoughts() {
                       setEditText(thought.thought);
                     }}
                     className="text-yellow-400 hover:text-yellow-600 text-sm"
-                    disabled={loadingAction}
+                    disabled={loading}
                   >
-                    ✎
+                    <Pencil className="inline" size={16} />
                   </button>
                   {/* Delete button */}
                   <button
                     onClick={() => deleteThought(thought.id)}
                     className="text-red-400 hover:text-red-600 text-sm"
-                    disabled={loadingAction}
+                    disabled={loading}
                   >
-                    ✕
+                    <Trash2 className="inline" size={16} />
                   </button>
                 </div>
               </>
@@ -368,7 +270,7 @@ function Thoughts() {
         ))}
       </ul>
       {/* Floating add button */}
-      <FloatingButton onClick={addThought} label="Add Thought" icon="+" />
+      <FloatingButton onClick={handleAddThought} label="Add Thought" icon="+" />
     </div>
   );
 }

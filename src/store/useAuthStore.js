@@ -3,6 +3,10 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { supabase } from '../components/supabaseClient';
+import { deriveKey } from '../utils/e2ee';
+import { migrateUserData } from '../utils/e2eeMigrate';
+
+const SALT = import.meta.env.VITE_E2EE_SALT;
 
 const useAuthStore = create(
   persist(
@@ -11,15 +15,29 @@ const useAuthStore = create(
       session: null,
       user: null,
       loading: true,
+      e2eeKey: null, // Store the derived E2EE key in memory
 
       // Initialize session from Supabase
       initSession: async () => {
         const { data } = await supabase.auth.getSession();
+        let e2eeKey = null;
+        if (data.session?.user) {
+          e2eeKey = await deriveKey({
+            username: data.session.user.email || data.session.user.user_metadata?.username || '',
+            userId: data.session.user.id,
+            salt: SALT,
+          });
+        }
         set({
           session: data.session,
           user: data.session?.user || null,
           loading: false,
+          e2eeKey,
         });
+        // Run migration after login
+        if (data.session?.user && e2eeKey) {
+          migrateUserData({ user: data.session.user, e2eeKey, supabase });
+        }
       },
 
       // Sign in with email/password
@@ -36,10 +54,25 @@ const useAuthStore = create(
             return { success: false, error };
           }
 
+          let e2eeKey = null;
+          if (data.session?.user) {
+            e2eeKey = await deriveKey({
+              username: data.session.user.email || data.session.user.user_metadata?.username || '',
+              userId: data.session.user.id,
+              salt: SALT,
+            });
+          }
+
           set({
             session: data.session,
             user: data.session?.user || null,
+            e2eeKey,
           });
+
+          // Run migration after login
+          if (data.session?.user && e2eeKey) {
+            migrateUserData({ user: data.session.user, e2eeKey, supabase });
+          }
 
           if (redirectTo) window.location.href = redirectTo;
 
@@ -63,10 +96,25 @@ const useAuthStore = create(
             return { success: false, error };
           }
 
+          let e2eeKey = null;
+          if (data.session?.user) {
+            e2eeKey = await deriveKey({
+              username: data.session.user.email || data.session.user.user_metadata?.username || '',
+              userId: data.session.user.id,
+              salt: SALT,
+            });
+          }
+
           set({
             session: data.session,
             user: data.session?.user || null,
+            e2eeKey,
           });
+
+          // Run migration after signup
+          if (data.session?.user && e2eeKey) {
+            migrateUserData({ user: data.session.user, e2eeKey, supabase });
+          }
 
           if (data.session && redirectTo) {
             window.location.href = redirectTo;
@@ -99,7 +147,7 @@ const useAuthStore = create(
         try {
           const { error } = await supabase.auth.signOut();
           if (error) console.error("Sign-out error:", error.message);
-          set({ session: null, user: null });
+          set({ session: null, user: null, e2eeKey: null });
           return { success: true };
         } finally {
           set({ loading: false });
@@ -107,11 +155,25 @@ const useAuthStore = create(
       },
 
       // Set session and user state
-      setSession: (session) =>
+      setSession: async (session) => {
+        let e2eeKey = null;
+        if (session?.user) {
+          e2eeKey = await deriveKey({
+            username: session.user.email || session.user.user_metadata?.username || '',
+            userId: session.user.id,
+            salt: SALT,
+          });
+        }
         set({
           session,
           user: session?.user || null,
-        }),
+          e2eeKey,
+        });
+        // Run migration after session set
+        if (session?.user && e2eeKey) {
+          migrateUserData({ user: session.user, e2eeKey, supabase });
+        }
+      },
 
       // Set loading state
       setLoading: (loading) => set({ loading }),
@@ -123,16 +185,16 @@ const useAuthStore = create(
 );
 
 // Initialize session once at load
-supabase.auth.getSession().then(({ data: { session } }) => {
+supabase.auth.getSession().then(async ({ data: { session } }) => {
   if (session) {
-    useAuthStore.getState().setSession(session);
+    await useAuthStore.getState().setSession(session);
   }
   useAuthStore.getState().setLoading(false);
 });
 
 // Listen to auth state changes globally
-supabase.auth.onAuthStateChange((_event, session) => {
-  useAuthStore.getState().setSession(session);
+supabase.auth.onAuthStateChange(async (_event, session) => {
+  await useAuthStore.getState().setSession(session);
   useAuthStore.getState().setLoading(false);
 });
 

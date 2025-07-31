@@ -5,9 +5,12 @@ import { parseText } from '../utils/parseText';
 import FloatingButton from '../components/FloatingButton';
 import useAuthStore from '../store/useAuthStore';
 import useSearchStore from '../store/useSearchStore';
+import useTasksStore from '../store/useTasksStore';
 import { supabase } from '../components/supabaseClient';
 import toast from 'react-hot-toast';
 import Fuse from 'fuse.js';
+import { encryptData, decryptData } from '../utils/e2ee';
+import { Pencil, Trash2 } from 'lucide-react';
 
 // Supabase helpers
 async function fetchTasks(userId) {
@@ -98,188 +101,62 @@ function useTaskSync(userId, addTaskToSupabase, setTasks) {
 }
 
 function Tasks() {
-  const { user, loading: authLoading } = useAuthStore();
+  // All hooks at the top
+  const { user, loading: authLoading, e2eeKey } = useAuthStore();
   const userId = user?.id;
-  const [tasks, setTasks] = useState([]);
+  const { tasks, loading, dataReady, fetchTasks, addTask, editTask, toggleTask, deleteTask, reset } = useTasksStore();
   const [newTask, setNewTask] = useState('');
   const [filter, setFilter] = useState('all');
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState('');
-  const [loadingFetch, setLoadingFetch] = useState(false);
-  const [loadingAction, setLoadingAction] = useState(false);
   const editInputRef = useRef(null);
+  const { searchQuery, setTasks: setTasksTasks } = useSearchStore();
 
-  // Global search query from store
-  const { searchQuery, setTasks: setSearchTasks } = useSearchStore();
-
-  // Load tasks from Supabase or localStorage on mount or login/logout
   useEffect(() => {
-    if (authLoading) {
-      return;
+    if (authLoading) return;
+    if (userId && !e2eeKey) return;
+    if (userId && e2eeKey) {
+      fetchTasks();
+    } else {
+      reset();
     }
-    
-    const loadTasks = async () => {
-      setLoadingFetch(true);
-      if (userId) {
-        try {
-          const data = await fetchTasks(userId);
-          setTasks(data || []);
-        } catch (e) {
-          console.error('Failed to fetch tasks from Supabase:', e);
-          setTasks([]);
-          toast.error('Failed to fetch tasks from Supabase');
-        }
-      } else {
-        const saved = localStorage.getItem('tasks');
-        setTasks(saved ? JSON.parse(saved) : []);
-      }
-      setLoadingFetch(false);
-    };
-    loadTasks();
-  }, [userId, authLoading]);
+  }, [userId, e2eeKey, authLoading, fetchTasks, reset]);
 
-  // Sync tasks with search store whenever tasks change
   useEffect(() => {
-    setSearchTasks(tasks);
-  }, [tasks, setSearchTasks]);
+    setTasksTasks(tasks);
+  }, [tasks, setTasksTasks]);
 
-  // Persist to localStorage if not logged in
-  useEffect(() => {
-    if (!authLoading && !userId) {
-    const isHydrated = JSON.parse(localStorage.getItem('tasks') || '[]');
-
-    // Only save if there's something to actually persist
-    if (tasks.length > 0) {
-      localStorage.setItem('tasks', JSON.stringify(tasks));
-    }
-
-    // Optional: prevent overwriting if data already exists
-    else if (isHydrated.length > 0) {
-      // Don't overwrite localStorage with empty state
-    }
-  }
-}, [tasks, userId, authLoading]);
-
-  useTaskSync(userId, addTaskToSupabase, setTasks);
-
-  // Add a new task
-  const addTask = async () => {
-    if (!newTask.trim()) return;
-    setLoadingAction(true);
-    const task = {
-      id: crypto.randomUUID(),
-      name: newTask,
-      is_done: false,
-      created_at: new Date().toISOString(),
-    };
-    if (userId && navigator.onLine) {
-      try {
-        const saved = await addTaskToSupabase(task, userId);
-        setTasks([saved, ...tasks]);
-        toast.success('Task added!');
-      } catch (e) {
-        console.error('Failed to add task to Supabase:', e);
-        toast.error('Failed to add task');
-      }
-    } else {
-      // Save locally with synced: false
-      const offlineTask = { ...task, synced: false };
-      const saved = localStorage.getItem('tasks');
-      let arr = [];
-      try {
-        arr = saved ? JSON.parse(saved) : [];
-        if (!Array.isArray(arr)) arr = [];
-      } catch { arr = []; }
-      arr.unshift(offlineTask);
-      localStorage.setItem('tasks', JSON.stringify(arr));
-      setTasks([offlineTask, ...tasks]);
-      toast.success('Task added locally!');
-    }
-    setNewTask('');
-    setLoadingAction(false);
-  };
-
-  // Save edits to a task
-  const saveEdit = async (id) => {
-    setLoadingAction(true);
-    if (userId) {
-      try {
-        const updated = await updateTaskInSupabase({ id, name: editText, is_done: false }, userId);
-        setTasks(tasks.map((task) => (task.id === id ? updated : task)));
-        toast.success('Task updated!');
-      } catch (e) {
-        toast.error('Failed to update task');
-      }
-    } else {
-      setTasks(
-        tasks.map((task) =>
-          task.id === id
-            ? { ...task, name: editText }
-            : task
-        )
-      );
-      toast.success('Task updated locally!');
-    }
-    setEditingId(null);
-    setEditText('');
-    setLoadingAction(false);
-  };
-
-  // Toggle task completion (handles both online and offline)
-  const toggleTask = async (id) => {
-    setLoadingAction(true);
-    if (userId) {
-      try {
-        const task = tasks.find((t) => t.id === id);
-        const updated = await updateTaskInSupabase({ id, name: task.name, is_done: !task.is_done }, userId);
-        setTasks(tasks.map((t) => (t.id === id ? updated : t)));
-        toast.success('Task updated!');
-      } catch (e) {
-        toast.error('Failed to update task');
-      }
-    } else {
-      setTasks(
-        tasks.map((t) =>
-          t.id === id ? { ...t, is_done: !t.is_done } : t
-        )
-      );
-      toast.success('Task updated locally!');
-    }
-    setLoadingAction(false);
-  };
-
-  // Delete a task (handles both online and offline)
-  const deleteTask = async (id) => {
-    setLoadingAction(true);
-    if (userId) {
-      try {
-        await deleteTaskFromSupabase(id, userId);
-        setTasks(tasks.filter((t) => t.id !== id));
-        toast.success('Task deleted!');
-      } catch (e) {
-        toast.error('Failed to delete task');
-      }
-    } else {
-      setTasks(tasks.filter((t) => t.id !== id));
-      toast.success('Task deleted locally!');
-    }
-    setLoadingAction(false);
-  };
-
-  // Focus edit input when editing
   useEffect(() => {
     if (editingId && editInputRef.current) {
       editInputRef.current.focus();
     }
   }, [editingId]);
 
-  // Memoized Fuse instance for fuzzy search
   const fuse = useMemo(() => {
     return new Fuse(tasks, {
       keys: ['name'],
       threshold: 0.3,
     });
   }, [tasks]);
+
+  // Only render after all hooks
+  if (authLoading || (userId && !e2eeKey) || !dataReady) {
+    return <div className="text-center text-gray-500 mb-4">Loading...</div>;
+  }
+
+  // Add a new task
+  const handleAddTask = async () => {
+    if (!newTask.trim()) return;
+    await addTask(newTask);
+    setNewTask('');
+  };
+
+  // Save edits to a task
+  const handleSaveEdit = async (id) => {
+    await editTask(id, editText);
+    setEditingId(null);
+    setEditText('');
+  };
 
   // Filtered tasks based on search and filter
   const filtered =
@@ -302,7 +179,7 @@ function Tasks() {
     <div>
       <h1 className="text-4xl font-bold mb-6">Task Manager</h1>
       {/* Show loading or saving state */}
-      {(loadingFetch || loadingAction) && <div className="text-center text-gray-500 mb-4">{loadingFetch ? 'Loading...' : 'Saving...'}</div>}
+      {loading && <div className="text-center text-gray-500 mb-4">Saving...</div>}
       {/* New task input */}
       <input
         type="text"
@@ -311,12 +188,12 @@ function Tasks() {
         onKeyDown={(e) => {
           if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            addTask();
+            handleAddTask();
           }
         }}
         className="w-full px-4 py-2 bg-white/5 border border-purple-400/40 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-purple-500"
         placeholder="Add a task... (e.g., @idea:dark-mode)"
-        disabled={loadingAction}
+        disabled={loading}
       />
       {/* Filter buttons */}
       <div className="my-6 flex gap-4">
@@ -329,7 +206,7 @@ function Tasks() {
                 ? 'bg-purple-600 text-white border-purple-700'
                 : 'bg-transparent border-gray-400 text-gray-600 dark:text-gray-300'
             }`}
-            disabled={loadingAction}
+            disabled={loading}
           >
             {type.charAt(0).toUpperCase() + type.slice(1)}
           </button>
@@ -352,23 +229,23 @@ function Tasks() {
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       e.preventDefault();
-                      saveEdit(task.id);
+                      handleSaveEdit(task.id);
                     }
                   }}
                   className="flex-1 p-2 bg-purple-100 dark:bg-purple-800 text-black dark:text-white rounded"
-                  disabled={loadingAction}
+                  disabled={loading}
                 />
                 <button
-                  onClick={() => saveEdit(task.id)}
+                  onClick={() => handleSaveEdit(task.id)}
                   className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded"
-                  disabled={loadingAction}
+                  disabled={loading}
                 >
                   Save
                 </button>
                 <button
                   onClick={() => setEditingId(null)}
                   className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded"
-                  disabled={loadingAction}
+                  disabled={loading}
                 >
                   Cancel
                 </button>
@@ -382,7 +259,7 @@ function Tasks() {
                     onChange={() => toggleTask(task.id)}
                     aria-label={`Mark ${task.name} as ${task.is_done ? 'incomplete' : 'done'}`}
                     className="h-5 w-5 text-purple-600"
-                    disabled={loadingAction}
+                    disabled={loading}
                   />
                   <span
                     className={`text-base ${
@@ -394,7 +271,7 @@ function Tasks() {
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-xs text-gray-400">
-                    {new Date(task. created_at).toLocaleString()}
+                    {new Date(task.created_at).toLocaleString()}
                   </span>
                   <button
                     onClick={() => {
@@ -402,16 +279,16 @@ function Tasks() {
                       setEditText(task.name);
                     }}
                     className="text-yellow-500 hover:text-yellow-700 text-sm"
-                    disabled={loadingAction}
+                    disabled={loading}
                   >
-                    ✎
+                    <Pencil className="inline" size={16} />
                   </button>
                   <button
                     onClick={() => deleteTask(task.id)}
                     className="text-red-400 hover:text-red-600 text-sm"
-                    disabled={loadingAction}
+                    disabled={loading}
                   >
-                    ✕
+                    <Trash2 className="inline" size={16} />
                   </button>
                 </div>
               </>
@@ -420,7 +297,7 @@ function Tasks() {
         ))}
       </ul>
       {/* Floating add button */}
-      <FloatingButton onClick={addTask} icon="+" label="Add Task" />
+      <FloatingButton onClick={handleAddTask} icon="+" label="Add Task" />
     </div>
   );
 }

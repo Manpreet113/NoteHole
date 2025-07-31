@@ -4,10 +4,13 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { parseText } from '../utils/parseText';
 import useSearchStore from '../store/useSearchStore';
 import useAuthStore from '../store/useAuthStore';
+import useIdeasStore from '../store/useIdeasStore';
 import { supabase } from '../components/supabaseClient';
 import FloatingButton from '../components/FloatingButton';
 import toast from 'react-hot-toast';
 import Fuse from 'fuse.js';
+import { encryptData, decryptData } from '../utils/e2ee';
+import { Pencil, Trash2 } from 'lucide-react';
 
 // Supabase helpers
 async function fetchIdeas(userId) {
@@ -98,167 +101,65 @@ function useIdeaSync(userId, addIdeaToSupabase, setIdeas) {
 }
 
 function Ideas() {
-  const { user, loading: authLoading } = useAuthStore();
+  // All hooks at the top
+  const { user, loading: authLoading, e2eeKey } = useAuthStore();
   const userId = user?.id;
-  const [ideas, setIdeas] = useState([]);
+  const { ideas, loading, dataReady, fetchIdeas, addIdea, editIdea, deleteIdea, reset } = useIdeasStore();
   const [newTitle, setNewTitle] = useState('');
   const [newDesc, setNewDesc] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [editTitle, setEditTitle] = useState('');
   const [editDesc, setEditDesc] = useState('');
-  const [loadingFetch, setLoadingFetch] = useState(false);
-  const [loadingAction, setLoadingAction] = useState(false);
   const editTitleRef = useRef(null);
-
-  // Global search query from store
   const { searchQuery, setIdeas: setSearchIdeas } = useSearchStore();
 
-  // Load ideas from Supabase or localStorage on mount or login/logout
   useEffect(() => {
-    if (authLoading) {
-      return;
+    if (authLoading) return;
+    if (userId && !e2eeKey) return;
+    if (userId && e2eeKey) {
+      fetchIdeas();
+    } else {
+      reset();
     }
-    
-    const loadIdeas = async () => {
-      setLoadingFetch(true);
-      if (userId) {
-        try {
-          const data = await fetchIdeas(userId);
-          setIdeas(data || []);
-        } catch (e) {
-          console.error('Failed to fetch ideas from Supabase:', e);
-          setIdeas([]);
-          toast.error('Failed to fetch ideas from Supabase');
-        }
-      } else {
-        const saved = localStorage.getItem('ideas');
-        setIdeas(saved ? JSON.parse(saved) : []);
-      }
-      setLoadingFetch(false);
-    };
-    loadIdeas();
-  }, [userId, authLoading]);
+  }, [userId, e2eeKey, authLoading, fetchIdeas, reset]);
 
-  // Sync ideas with search store whenever ideas change
   useEffect(() => {
     setSearchIdeas(ideas);
   }, [ideas, setSearchIdeas]);
 
-  // Persist to localStorage if not logged in
-  useEffect(() => {
-    if (!authLoading && !userId) {
-    const isHydrated = JSON.parse(localStorage.getItem('ideas') || '[]');
-
-    // Only save if there's something to actually persist
-    if (ideas.length > 0) {
-      localStorage.setItem('ideas', JSON.stringify(ideas));
-    }
-
-    // Optional: prevent overwriting if data already exists
-    else if (isHydrated.length > 0) {
-      // Don't overwrite localStorage with empty state
-    }
-  }
-}, [ideas, userId, authLoading]);
-
-  // Add a new idea
-  const addIdea = async () => {
-    if (!newTitle.trim()) return;
-    setLoadingAction(true);
-    const idea = {
-      id: crypto.randomUUID(),
-      title: newTitle,
-      description: newDesc,
-      created_at: new Date().toISOString(),
-    };
-    if (userId && navigator.onLine) {
-      try {
-        const saved = await addIdeaToSupabase(idea, userId);
-        setIdeas([saved, ...ideas]);
-        toast.success('Idea added!');
-      } catch (e) {
-        console.error('Failed to add idea to Supabase:', e);
-        toast.error('Failed to add idea');
-      }
-    } else {
-      // Save locally with synced: false
-      const offlineIdea = { ...idea, synced: false };
-      const saved = localStorage.getItem('ideas');
-      let arr = [];
-      try {
-        arr = saved ? JSON.parse(saved) : [];
-        if (!Array.isArray(arr)) arr = [];
-      } catch { arr = []; }
-      arr.unshift(offlineIdea);
-      localStorage.setItem('ideas', JSON.stringify(arr));
-      setIdeas([offlineIdea, ...ideas]);
-      toast.success('Idea added locally!');
-    }
-    setNewTitle('');
-    setNewDesc('');
-    setLoadingAction(false);
-  };
-
-  // Save edits to an idea (handles both online and offline)
-  const saveEdit = async (id) => {
-    setLoadingAction(true);
-    if (userId) {
-      try {
-        const updated = await updateIdeaInSupabase({ id, title: editTitle, description: editDesc }, userId);
-        setIdeas(ideas.map((idea) => (idea.id === id ? updated : idea)));
-        toast.success('Idea updated!');
-      } catch (e) {
-        toast.error('Failed to update idea');
-      }
-    } else {
-      setIdeas(
-        ideas.map((idea) =>
-          idea.id === id
-            ? { ...idea, title: editTitle, description: editDesc }
-            : idea
-        )
-      );
-      toast.success('Idea updated locally!');
-    }
-    setEditingId(null);
-    setEditTitle('');
-    setEditDesc('');
-    setLoadingAction(false);
-  };
-
-  // Delete an idea (handles both online and offline)
-  const deleteIdea = async (id) => {
-    setLoadingAction(true);
-    if (userId) {
-      try {
-        await deleteIdeaFromSupabase(id, userId);
-        setIdeas(ideas.filter((i) => i.id !== id));
-        toast.success('Idea deleted!');
-      } catch (e) {
-        toast.error('Failed to delete idea');
-      }
-    } else {
-      setIdeas(ideas.filter((i) => i.id !== id));
-      toast.success('Idea deleted locally!');
-    }
-    setLoadingAction(false);
-  };
-
-  // Focus edit input when editing
   useEffect(() => {
     if (editingId && editTitleRef.current) {
       editTitleRef.current.focus();
     }
   }, [editingId]);
 
-  // Memoized Fuse instance for fuzzy search
   const fuse = useMemo(() => {
-    // Only create Fuse if ideas change
     return new Fuse(ideas, {
       keys: ['title', 'description'],
       threshold: 0.3,
     });
   }, [ideas]);
+
+  // Only render after all hooks
+  if (authLoading || (userId && !e2eeKey) || !dataReady) {
+    return <div className="text-center text-gray-500 mb-4">Loading...</div>;
+  }
+
+  // Add a new idea
+  const handleAddIdea = async () => {
+    if (!newTitle.trim()) return;
+    await addIdea(newTitle, newDesc);
+    setNewTitle('');
+    setNewDesc('');
+  };
+
+  // Save edits to an idea
+  const handleSaveEdit = async (id) => {
+    await editIdea(id, editTitle, editDesc);
+    setEditingId(null);
+    setEditTitle('');
+    setEditDesc('');
+  };
 
   // Filtered ideas based on search query
   const filtered =
@@ -270,7 +171,7 @@ function Ideas() {
     <div>
       <h1 className="text-4xl font-bold mb-6">Ideas Board</h1>
       {/* Show loading or saving state */}
-      {(loadingFetch || loadingAction) && <div className="text-center text-gray-500 mb-4">{loadingFetch ? 'Loading...' : 'Saving...'}</div>}
+      {loading && <div className="text-center text-gray-500 mb-4">Saving...</div>}
       {/* New idea input */}
       <input
         type="text"
@@ -279,12 +180,12 @@ function Ideas() {
         onKeyDown={(e) => {
           if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            addIdea();
+            handleAddIdea();
           }
         }}
         className="w-full px-4 py-2 bg-white/5 border border-purple-400/40 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-purple-500 mb-4"
         placeholder="Idea Title"
-        disabled={loadingAction}
+        disabled={loading}
       />
       <textarea
         value={newDesc}
@@ -292,13 +193,13 @@ function Ideas() {
         onKeyDown={(e) => {
           if (e.key === 'Enter' && e.ctrlKey) {
             e.preventDefault();
-            addIdea();
+            handleAddIdea();
           }
         }}
         className="w-full px-4 py-2 bg-white/5 border border-purple-400/40 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-purple-500"
         placeholder="Description... (Ctrl+Enter to save)"
         rows="3"
-        disabled={loadingAction}
+        disabled={loading}
       />
       {/* Ideas grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
@@ -318,11 +219,11 @@ function Ideas() {
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault();
-                      saveEdit(idea.id);
+                      handleSaveEdit(idea.id);
                     }
                   }}
                   className="w-full p-2 bg-purple-100 dark:bg-purple-800 text-black dark:text-white rounded"
-                  disabled={loadingAction}
+                  disabled={loading}
                 />
                 <textarea
                   value={editDesc}
@@ -330,25 +231,25 @@ function Ideas() {
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && e.ctrlKey) {
                       e.preventDefault();
-                      saveEdit(idea.id);
+                      handleSaveEdit(idea.id);
                     }
                   }}
                   className="w-full p-2 bg-purple-100 dark:bg-purple-800 text-black dark:text-white rounded"
                   rows="3"
-                  disabled={loadingAction}
+                  disabled={loading}
                 />
                 <div className="flex space-x-2">
                   <button
-                    onClick={() => saveEdit(idea.id)}
+                    onClick={() => handleSaveEdit(idea.id)}
                     className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded"
-                    disabled={loadingAction}
+                    disabled={loading}
                   >
                     Save
                   </button>
                   <button
                     onClick={() => setEditingId(null)}
                     className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded"
-                    disabled={loadingAction}
+                    disabled={loading}
                   >
                     Cancel
                   </button>
@@ -362,7 +263,7 @@ function Ideas() {
                   {parseText(idea.description)}
                 </p>
                 <p className="text-gray-500 text-sm mt-2">
-                  {new Date(idea. created_at).toLocaleString()}
+                  {new Date(idea.created_at).toLocaleString()}
                 </p>
                 <div className="mt-2 flex space-x-2">
                   {/* Edit button */}
@@ -373,17 +274,17 @@ function Ideas() {
                       setEditDesc(idea.description);
                     }}
                     className="text-yellow-500 hover:text-yellow-700 text-sm"
-                    disabled={loadingAction}
+                    disabled={loading}
                   >
-                     e
+                    <Pencil className="inline" size={16} />
                   </button>
                   {/* Delete button */}
                   <button
                     onClick={() => deleteIdea(idea.id)}
                     className="text-red-400 hover:text-red-600 text-sm"
-                    disabled={loadingAction}
+                    disabled={loading}
                   >
-                     15
+                    <Trash2 className="inline" size={16} />
                   </button>
                 </div>
               </>
@@ -392,7 +293,7 @@ function Ideas() {
         ))}
       </div>
       {/* Floating add button */}
-      <FloatingButton onClick={addIdea} icon="+" label="Add Idea" />
+      <FloatingButton onClick={handleAddIdea} icon="+" label="Add Idea" />
     </div>
   );
 }
