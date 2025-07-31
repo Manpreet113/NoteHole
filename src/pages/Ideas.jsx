@@ -133,13 +133,6 @@ function Ideas() {
     }
   }, [editingId]);
 
-  const fuse = useMemo(() => {
-    return new Fuse(ideas, {
-      keys: ['title', 'description'],
-      threshold: 0.3,
-    });
-  }, [ideas]);
-
   // Only render after all hooks
   if (authLoading || (userId && !e2eeKey) || !dataReady) {
     return <div className="text-center text-gray-500 mb-4">Loading...</div>;
