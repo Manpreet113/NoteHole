@@ -4,101 +4,10 @@ import { parseText } from '../utils/parseText';
 import useSearchStore from '../store/useSearchStore';
 import useAuthStore from '../store/useAuthStore';
 import useIdeasStore from '../store/useIdeasStore';
-import { supabase } from '../components/supabaseClient';
 import FloatingButton from '../components/FloatingButton';
-import toast from 'react-hot-toast';
 import Fuse from 'fuse.js';
-import { encryptData, decryptData } from '../utils/e2ee';
 import { Pencil, Trash2 } from 'lucide-react';
 import { setPageSEO } from '../utils/seo.js';
-
-// Supabase helpers
-async function fetchIdeas(userId) {
-  const { data, error } = await supabase
-    .from('ideas')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
-  if (error) throw error;
-  return data;
-}
-
-async function addIdeaToSupabase(idea, userId) {
-  const { data, error } = await supabase
-    .from('ideas')
-    .insert([{ ...idea, user_id: userId }])
-    .select();
-  if (error) throw error;
-  return data[0];
-}
-
-async function updateIdeaInSupabase(idea, userId) {
-  const { data, error } = await supabase
-    .from('ideas')
-    .update({ title: idea.title, description: idea.description })
-    .eq('id', idea.id)
-    .eq('user_id', userId)
-    .select();
-  if (error) throw error;
-  return data[0];
-}
-
-async function deleteIdeaFromSupabase(id, userId) {
-  const { error } = await supabase
-    .from('ideas')
-    .delete()
-    .eq('id', id)
-    .eq('user_id', userId);
-  if (error) throw error;
-}
-
-// --- Offline sync hook ---
-function useIdeaSync(userId, addIdeaToSupabase, setIdeas) {
-  useEffect(() => {
-    function getUnsyncedIdeas() {
-      const saved = localStorage.getItem('ideas');
-      if (!saved) return [];
-      try {
-        const arr = JSON.parse(saved);
-        return Array.isArray(arr) ? arr.filter((n) => n.synced === false) : [];
-      } catch {
-        return [];
-      }
-    }
-    function removeSyncedIdeas(syncedIds) {
-      const saved = localStorage.getItem('ideas');
-      if (!saved) return;
-      try {
-        const arr = JSON.parse(saved);
-        const filtered = arr.filter((n) => !syncedIds.includes(n.id));
-        localStorage.setItem('ideas', JSON.stringify(filtered));
-      } catch {}
-    }
-    async function syncIdeas() {
-      if (!userId || !navigator.onLine) return;
-      const unsynced = getUnsyncedIdeas();
-      if (!unsynced.length) return;
-      const syncedIds = [];
-      for (const idea of unsynced) {
-        try {
-          const { synced, ...toSave } = idea;
-          const saved = await addIdeaToSupabase(toSave, userId);
-          setIdeas((prev) => [saved, ...prev.filter((n) => n.id !== idea.id)]);
-          syncedIds.push(idea.id);
-        } catch (e) {}
-      }
-      if (syncedIds.length) removeSyncedIdeas(syncedIds);
-    }
-    if (userId && navigator.onLine) {
-      syncIdeas();
-    }
-    function handleOnline() {
-      if (userId) syncIdeas();
-    }
-    window.addEventListener('online', handleOnline);
-    return () => window.removeEventListener('online', handleOnline);
-  }, [userId, addIdeaToSupabase, setIdeas]);
-}
 
 function Ideas() {
   // All hooks at the top
@@ -132,11 +41,6 @@ function Ideas() {
       editTitleRef.current.focus();
     }
   }, [editingId]);
-
-  // Only render after all hooks
-  if (authLoading || (userId && !e2eeKey) || !dataReady) {
-    return <div className="text-center text-gray-500 mb-4">Loading...</div>;
-  }
 
   // Add a new idea
   const handleAddIdea = async () => {
@@ -178,6 +82,11 @@ function Ideas() {
       threshold: 0.3,
     });
   }, [ideas]);
+
+    // Only render after all hooks
+  if (authLoading || (userId && !e2eeKey) || !dataReady) {
+    return <div className="text-center text-gray-500 mb-4">Loading...</div>;
+  }
   
   // Filtered ideas based on search query
   const filtered =
