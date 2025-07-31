@@ -5,106 +5,15 @@ import FloatingButton from '../components/FloatingButton';
 import useAuthStore from '../store/useAuthStore';
 import useSearchStore from '../store/useSearchStore';
 import useTasksStore from '../store/useTasksStore';
-import { supabase } from '../components/supabaseClient';
-import toast from 'react-hot-toast';
 import Fuse from 'fuse.js';
-import { encryptData, decryptData } from '../utils/e2ee';
 import { Pencil, Trash2 } from 'lucide-react';
 import { setPageSEO } from '../utils/seo.js';
-
-// Supabase helpers
-async function fetchTasks(userId) {
-  const { data, error } = await supabase
-    .from('tasks')
-    .select('*')
-    .eq('user_id', userId)
-    .order(' created_at', { ascending: false });
-  if (error) throw error;
-  return data;
-}
-
-async function addTaskToSupabase(task, userId) {
-  const { data, error } = await supabase
-    .from('tasks')
-    .insert([{ ...task, user_id: userId }])
-    .select();
-  if (error) throw error;
-  return data[0];
-}
-
-async function updateTaskInSupabase(task, userId) {
-  const { data, error } = await supabase
-    .from('tasks')
-    .update({ name: task.name, is_done: task.is_done })
-    .eq('id', task.id)
-    .eq('user_id', userId)
-    .select();
-  if (error) throw error;
-  return data[0];
-}
-
-async function deleteTaskFromSupabase(id, userId) {
-  const { error } = await supabase
-    .from('tasks')
-    .delete()
-    .eq('id', id)
-    .eq('user_id', userId);
-  if (error) throw error;
-}
-
-// --- Offline sync hook ---
-function useTaskSync(userId, addTaskToSupabase, setTasks) {
-  useEffect(() => {
-    function getUnsyncedTasks() {
-      const saved = localStorage.getItem('tasks');
-      if (!saved) return [];
-      try {
-        const arr = JSON.parse(saved);
-        return Array.isArray(arr) ? arr.filter((n) => n.synced === false) : [];
-      } catch {
-        return [];
-      }
-    }
-    function removeSyncedTasks(syncedIds) {
-      const saved = localStorage.getItem('tasks');
-      if (!saved) return;
-      try {
-        const arr = JSON.parse(saved);
-        const filtered = arr.filter((n) => !syncedIds.includes(n.id));
-        localStorage.setItem('tasks', JSON.stringify(filtered));
-      } catch {}
-    }
-    async function syncTasks() {
-      if (!userId || !navigator.onLine) return;
-      const unsynced = getUnsyncedTasks();
-      if (!unsynced.length) return;
-      const syncedIds = [];
-      for (const task of unsynced) {
-        try {
-          const { synced, ...toSave } = task;
-          const saved = await addTaskToSupabase(toSave, userId);
-          setTasks((prev) => [saved, ...prev.filter((n) => n.id !== task.id)]);
-          syncedIds.push(task.id);
-        } catch (e) {}
-      }
-      if (syncedIds.length) removeSyncedTasks(syncedIds);
-    }
-    if (userId && navigator.onLine) {
-      syncTasks();
-    }
-    function handleOnline() {
-      if (userId) syncTasks();
-    }
-    window.addEventListener('online', handleOnline);
-    return () => window.removeEventListener('online', handleOnline);
-  }, [userId, addTaskToSupabase, setTasks]);
-}
 
 function Tasks() {
   // All hooks at the top
   const { user, loading: authLoading, e2eeKey } = useAuthStore();
   const userId = user?.id;
-  const { tasks, loading, dataReady, fetchTasks, addTask, editTask, toggleTask, deleteTask, reset } = useTasksStore();
+  const { tasks, loading, hydrated, fetchTasks, addTask, editTask, toggleTask, deleteTask } = useTasksStore();
   const [newTask, setNewTask] = useState('');
   const [filter, setFilter] = useState('all');
   const [editingId, setEditingId] = useState(null);
@@ -113,14 +22,10 @@ function Tasks() {
   const { searchQuery, setTasks: setTasksTasks } = useSearchStore();
 
   useEffect(() => {
-    if (authLoading) return;
-    if (userId && !e2eeKey) return;
-    if (userId && e2eeKey) {
+    if (hydrated && user && e2eeKey) {
       fetchTasks();
-    } else {
-      reset();
     }
-  }, [userId, e2eeKey, authLoading, fetchTasks, reset]);
+  }, [hydrated, user, e2eeKey, fetchTasks]);
 
   useEffect(() => {
     setTasksTasks(tasks);
@@ -132,10 +37,7 @@ function Tasks() {
     }
   }, [editingId]);
 
-  // Only render after all hooks
-  if (authLoading || (userId && !e2eeKey) || !dataReady) {
-    return <div className="text-center text-gray-500 mb-4">Loading...</div>;
-  }
+  
 
   // Add a new task
   const handleAddTask = async () => {
@@ -166,7 +68,6 @@ function Tasks() {
       canonical: 'https://notehole.pages.dev/tasks'
     });
   }, []);
-
   // Memoized Fuse instance for fuzzy search
   const fuse = useMemo(() => {
     return new Fuse(tasks, {
@@ -174,6 +75,12 @@ function Tasks() {
       threshold: 0.3,
     });
   }, [tasks]);
+  
+  // Only render after all hooks
+  if (!hydrated) {
+    return <div className="text-center text-gray-500 mb-4">Loading...</div>;
+  }
+
 
   // Filtered tasks based on search and filter
   const filtered =
@@ -206,6 +113,7 @@ function Tasks() {
           type="text"
           placeholder="New task..."
           value={newTask}
+          onChange={(e) => setNewTask(e.target.value)}
           onKeyDown={(e) => {
           if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();

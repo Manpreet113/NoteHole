@@ -50,7 +50,7 @@ const useAuthStore = create(
           });
 
           if (error) {
-            console.error("Sign-in error:", error.message);
+            console.error("useAuthStore: Sign-in error:", error.message);
             return { success: false, error };
           }
 
@@ -92,7 +92,7 @@ const useAuthStore = create(
           });
 
           if (error) {
-            console.error("Sign-up error:", error.message);
+            console.error("useAuthStore: Sign-up error:", error.message);
             return { success: false, error };
           }
 
@@ -128,6 +128,7 @@ const useAuthStore = create(
 
       // Sign in with OAuth provider (Google, Github, etc.)
       signInWithOAuth: async (provider) => {
+        
         set({ loading: true });
         const { error } = await supabase.auth.signInWithOAuth({
           provider,
@@ -136,7 +137,7 @@ const useAuthStore = create(
           },
         });
 
-        if (error) console.error("OAuth error:", error.message);
+        if (error) console.error("useAuthStore: OAuth error:", error.message);
 
         return { success: true };
       },
@@ -146,7 +147,7 @@ const useAuthStore = create(
         set({ loading: true });
         try {
           const { error } = await supabase.auth.signOut();
-          if (error) console.error("Sign-out error:", error.message);
+          if (error) console.error("useAuthStore: Sign-out error:", error.message);
           set({ session: null, user: null, e2eeKey: null });
           return { success: true };
         } finally {
@@ -176,7 +177,9 @@ const useAuthStore = create(
       },
 
       // Set loading state
-      setLoading: (loading) => set({ loading }),
+      setLoading: (loading) => {
+        set({ loading });
+      },
     }),
     {
       name: 'auth-storage', // Persist store in localStorage
