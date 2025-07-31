@@ -1,6 +1,5 @@
-// Ideas.jsx
-// Ideas board page: create, edit, delete, and search ideas (Supabase sync for logged-in users, localStorage for guests)
 import { useState, useEffect, useMemo, useRef } from 'react';
+import { motion } from 'framer-motion';
 import { parseText } from '../utils/parseText';
 import useSearchStore from '../store/useSearchStore';
 import useAuthStore from '../store/useAuthStore';
@@ -11,6 +10,7 @@ import toast from 'react-hot-toast';
 import Fuse from 'fuse.js';
 import { encryptData, decryptData } from '../utils/e2ee';
 import { Pencil, Trash2 } from 'lucide-react';
+import { setPageSEO } from '../utils/seo.js';
 
 // Supabase helpers
 async function fetchIdeas(userId) {
@@ -161,6 +161,31 @@ function Ideas() {
     setEditDesc('');
   };
 
+  // Focus edit input when editing
+  useEffect(() => {
+    if (editingId && editTitleRef.current) {
+      editTitleRef.current.focus();
+    }
+  }, [editingId]);
+
+  // Set SEO for Ideas page
+  useEffect(() => {
+    setPageSEO({
+      title: 'Ideas – NoteHole',
+      description: 'Capture, organize, and develop your creative ideas. Visual grid, search, and cross-linking for your next big thing.',
+      canonical: 'https://notehole.pages.dev/ideas'
+    });
+  }, []);
+
+  // Memoized Fuse instance for fuzzy search
+  const fuse = useMemo(() => {
+    // Only create Fuse if ideas change
+    return new Fuse(ideas, {
+      keys: ['title', 'description'],
+      threshold: 0.3,
+    });
+  }, [ideas]);
+  
   // Filtered ideas based on search query
   const filtered =
     searchQuery.trim() === ''
@@ -168,130 +193,142 @@ function Ideas() {
       : fuse.search(searchQuery).map((r) => r.item);
 
   return (
-    <div>
+    <div className="min-h-screen text-black dark:text-white flex flex-col text-xs sm:text-base">
       <h1 className="text-4xl font-bold mb-6">Ideas Board</h1>
       {/* Show loading or saving state */}
       {loading && <div className="text-center text-gray-500 mb-4">Saving...</div>}
       {/* New idea input */}
-      <input
-        type="text"
-        value={newTitle}
-        onChange={(e) => setNewTitle(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            handleAddIdea();
-          }
-        }}
-        className="w-full px-4 py-2 bg-white/5 border border-purple-400/40 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-purple-500 mb-4"
-        placeholder="Idea Title"
-        disabled={loading}
-      />
-      <textarea
-        value={newDesc}
-        onChange={(e) => setNewDesc(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' && e.ctrlKey) {
-            e.preventDefault();
-            handleAddIdea();
-          }
-        }}
-        className="w-full px-4 py-2 bg-white/5 border border-purple-400/40 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-        placeholder="Description... (Ctrl+Enter to save)"
-        rows="3"
-        disabled={loading}
-      />
-      {/* Ideas grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-        {filtered.map((idea) => (
-          <div
-            key={idea.id}
-            className="p-4 bg-white/10 dark:bg-white/5 backdrop-blur-md border border-purple-300/10 rounded-lg shadow-md hover:scale-[1.02] hover:shadow-2xl transition duration-300"
-          >
-            {editingId === idea.id ? (
-              <div className="space-y-2">
-                {/* Edit idea form */}
-                <input
-                  ref={editTitleRef}
-                  type="text"
-                  value={editTitle}
-                  onChange={(e) => setEditTitle(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSaveEdit(idea.id);
-                    }
-                  }}
-                  className="w-full p-2 bg-purple-100 dark:bg-purple-800 text-black dark:text-white rounded"
-                  disabled={loading}
-                />
-                <textarea
-                  value={editDesc}
-                  onChange={(e) => setEditDesc(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && e.ctrlKey) {
-                      e.preventDefault();
-                      handleSaveEdit(idea.id);
-                    }
-                  }}
-                  className="w-full p-2 bg-purple-100 dark:bg-purple-800 text-black dark:text-white rounded"
-                  rows="3"
-                  disabled={loading}
-                />
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => handleSaveEdit(idea.id)}
-                    className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded"
-                    disabled={loading}
-                  >
-                    Save
-                  </button>
-                  <button
-                    onClick={() => setEditingId(null)}
-                    className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded"
-                    disabled={loading}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <>
-                {/* Render idea title and description */}
-                <h2 className="text-xl font-semibold">{idea.title}</h2>
-                <p className="text-gray-700 dark:text-gray-300">
-                  {parseText(idea.description)}
-                </p>
-                <p className="text-gray-500 text-sm mt-2">
-                  {new Date(idea.created_at).toLocaleString()}
-                </p>
-                <div className="mt-2 flex space-x-2">
-                  {/* Edit button */}
-                  <button
-                    onClick={() => {
-                      setEditingId(idea.id);
-                      setEditTitle(idea.title);
-                      setEditDesc(idea.description);
-                    }}
-                    className="text-yellow-500 hover:text-yellow-700 text-sm"
-                    disabled={loading}
-                  >
-                    <Pencil className="inline" size={16} />
-                  </button>
-                  {/* Delete button */}
-                  <button
-                    onClick={() => deleteIdea(idea.id)}
-                    className="text-red-400 hover:text-red-600 text-sm"
-                    disabled={loading}
-                  >
-                    <Trash2 className="inline" size={16} />
-                  </button>
-                </div>
-              </>
-            )}
+<main className="flex-1 w-full max-w-xs sm:max-w-3xl lg:max-w-6xl mx-auto px-2 sm:px-6 py-6 sm:py-10">
+  {/* Add new idea form */}
+  <form
+    onSubmit={(e) => {
+      e.preventDefault();
+      handleAddIdea();
+    }}
+    className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-6 sm:mb-8"
+  >
+    <input
+      type="text"
+      value={newTitle}
+      onChange={(e) => setNewTitle(e.target.value)}
+      placeholder="New idea title..."
+      className="flex-1 px-2 sm:px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-gray-900/70 text-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs sm:text-base"
+      disabled={loading}
+      required
+    />
+    <input
+      type="text"
+      value={newDesc}
+      onChange={(e) => setNewDesc(e.target.value)}
+      placeholder="Description (optional)"
+      className="flex-1 px-2 sm:px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-gray-900/70 text-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs sm:text-base"
+      disabled={loading}
+    />
+    <button
+      type="submit"
+      className="bg-purple-600 text-white px-4 sm:px-6 py-2 rounded-lg font-semibold hover:bg-purple-700 transition-colors text-xs sm:text-base"
+      disabled={loading}
+    >
+      Add
+    </button>
+  </form>
+
+  {/* Ideas grid */}
+  <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 space-y-4 mt-6">
+    {filtered.map((idea) => (
+      <motion.div
+        key={idea.id}
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 16 }}
+        transition={{ duration: 0.22, ease: 'easeOut' }}
+        className="break-inside-avoid mb-4 p-4 bg-white/10 dark:bg-white/5 backdrop-blur-md border border-purple-300/10 rounded-lg shadow-md hover:scale-[1.02] hover:shadow-2xl transition duration-300 cursor-pointer"
+      >
+        {editingId === idea.id ? (
+          <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
+            <input
+              ref={editTitleRef}
+              type="text"
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSaveEdit(idea.id);
+                }
+              }}
+              className="w-full p-2 bg-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-800 text-black dark:text-white rounded"
+              disabled={loading}
+            />
+            <textarea
+              value={editDesc}
+              onChange={(e) => setEditDesc(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && e.ctrlKey) {
+                  e.preventDefault();
+                  handleSaveEdit(idea.id);
+                }
+              }}
+              className="w-full p-2 bg-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 text-black dark:text-white rounded"
+              rows="3"
+              disabled={loading}
+            />
+            <div className="flex space-x-2">
+              <button
+                onClick={() => handleSaveEdit(idea.id)}
+                className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded"
+                disabled={loading}
+              >
+                Save
+              </button>
+              <button
+                onClick={() => setEditingId(null)}
+                className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded"
+                disabled={loading}
+              >
+                Cancel
+              </button>
+            </div>
           </div>
-        ))}
-      </div>
+        ) : (
+          <div onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-xl font-semibold mb-2 break-words break-all whitespace-pre-wrap">
+              {idea.title}
+            </h2>
+            <p className="text-gray-700 dark:text-gray-300 break-words break-all whitespace-pre-wrap overflow-hidden">
+              {parseText(idea.description)}
+            </p>
+            <p className="text-gray-500 text-sm mt-2">
+              {new Date(idea.created_at).toLocaleString()}
+            </p>
+            <div className="mt-2 flex space-x-2 items-center">
+              <button
+                onClick={() => {
+                  setEditingId(idea.id);
+                  setEditTitle(idea.title);
+                  setEditDesc(idea.description);
+                }}
+                className="btn btn-ghost btn-sm text-yellow-500 hover:text-yellow-700"
+                disabled={loading}
+                title="Edit"
+              >
+                <Pencil size={18} />
+              </button>
+              <button
+                onClick={() => deleteIdea(idea.id)}
+                className="btn btn-ghost btn-sm text-red-400 hover:text-red-600"
+                disabled={loading}
+                title="Delete"
+              >
+                <Trash2 size={18} />
+              </button>
+            </div>
+          </div>
+        )}
+      </motion.div>
+    ))}
+  </div>
+</main>
       {/* Floating add button */}
       <FloatingButton onClick={handleAddIdea} icon="+" label="Add Idea" />
     </div>

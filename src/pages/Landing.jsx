@@ -1,5 +1,3 @@
-// Landing.jsx
-// Landing page for NoteHole: hero, features, FAQ, and theme toggle
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import {
@@ -9,6 +7,7 @@ import {
 } from "@headlessui/react";
 import useDarkModeStore from "../store/useDarkModeStore";
 import useAuthStore from '../store/useAuthStore';
+import { setPageSEO } from '../utils/seo.js';
 
 // List of core features for display
 const features = [
@@ -53,8 +52,19 @@ function Landing() {
     };
   }, []);
 
+  // Set SEO for Landing page
+  useEffect(() => {
+    setPageSEO({
+      title: 'NoteHole – Your Personal Brain Dump',
+      description: 'NoteHole: Organize your thoughts, tasks, and ideas in one place. Minimalist, fast, and privacy-first note-taking app with offline support and Supabase sync.',
+      image: 'https://notehole.pages.dev/android-chrome-512x512.png',
+      url: 'https://notehole.pages.dev/',
+      canonical: 'https://notehole.pages.dev/'
+    });
+  }, []);
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-black text-black dark:text-white flex flex-col items-center">
+    <div className="min-h-screen bg-gray-50 dark:bg-black text-black dark:text-white flex flex-col items-center text-xs sm:text-base">
       {/* Radial Gradient Follower */}
       <div
         className="pointer-events-none fixed inset-0 z-0"
@@ -67,9 +77,9 @@ function Landing() {
 
       {/* Header with theme toggle and login/avatar */}
       <header className="w-full fixed top-0 z-30">
-        <div className="container mx-auto px-4 py-3 flex justify-between items-center backdrop-blur-md bg-white/30 dark:bg-black/30 rounded-b-xl shadow-md">
+        <div className="container mx-auto px-2 sm:px-4 py-2 sm:py-3 flex justify-between items-center backdrop-blur-md bg-white/30 dark:bg-black/30 rounded-b-xl shadow-md">
           <h1
-            className="text-xl sm:text-2xl font-bold tracking-tight"
+            className="text-lg sm:text-xl font-bold tracking-tight"
             style={{ fontFamily: "var(--font-secondary)" }}
           >
              NoteHole
@@ -132,35 +142,35 @@ function Landing() {
       </header>
 
       {/* Hero section */}
-      <main className="flex flex-col items-center justify-center text-center px-6 pt-32 sm:pt-40 lg:pt-48 pb-12 max-w-screen-md mx-auto">
-        <h2 className="text-3xl sm:text-5xl font-bold mb-4 leading-tight">
+      <main className="flex flex-col items-center justify-center text-center px-2 sm:px-6 pt-24 sm:pt-40 lg:pt-48 pb-8 sm:pb-12 max-w-xs sm:max-w-screen-md mx-auto">
+        <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold mb-3 sm:mb-4 leading-tight">
           Declutter your mind, one dump at a time.
         </h2>
-        <p className="text-base sm:text-lg mb-6 text-gray-600 dark:text-gray-300">
+        <p className="text-xs sm:text-base md:text-lg mb-4 sm:mb-6 text-gray-600 dark:text-gray-300">
           {/* App description */}
           Your personal mental tracking dashboard — log thoughts, track tasks, organize ideas before they vanish into the void.
         </p>
         <Link to="/thoughts">
-          <button className="bg-purple-600 text-white px-6 py-3 rounded-full text-lg hover:bg-purple-700 transition duration-200">
+          <button className="btn btn-primary btn-lg bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-800">
             Start Organizing Now
           </button>
         </Link>
       </main>
 
       {/* Features grid */}
-      <section className="w-full max-w-screen-xl px-6 py-12">
-        <h3 className="text-2xl sm:text-3xl font-bold mb-8 text-center">
+      <section className="w-full max-w-screen-xl px-2 sm:px-6 py-6 sm:py-12">
+        <h3 className="text-lg sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-8 text-center">
           Core Features
         </h3>
-        <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
+        <div className="grid gap-3 sm:gap-6 sm:grid-cols-2 md:grid-cols-3">
           {features.map((feature, index) => (
             <div
               key={index}
-              className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-md hover:shadow-xl hover:scale-[1.03] transition duration-200"
+              className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-3 sm:p-6 shadow-md hover:shadow-xl hover:scale-[1.03] transition duration-200"
             >
-              <i className={`${feature.icon} text-3xl text-purple-600 mb-4`}></i>
-              <h4 className="text-lg font-semibold mb-2">{feature.name}</h4>
-              <ul className="list-disc list-inside text-sm text-gray-700 dark:text-gray-300">
+              <i className={`${feature.icon} text-2xl sm:text-3xl text-purple-600 mb-2 sm:mb-4`}></i>
+              <h4 className="text-base sm:text-lg font-semibold mb-1 sm:mb-2">{feature.name}</h4>
+              <ul className="list-disc list-inside text-xs sm:text-sm text-gray-700 dark:text-gray-300">
                 {feature.pros.map((pro, i) => (
                   <li key={i}>{pro}</li>
                 ))}
@@ -171,11 +181,11 @@ function Landing() {
       </section>
 
       {/* FAQ accordion */}
-      <section className="w-full px-6 max-w-screen-md mx-auto py-12">
-        <h3 className="text-2xl sm:text-3xl font-bold mb-8 text-center">
+      <section className="w-full px-2 sm:px-6 max-w-xs sm:max-w-screen-md mx-auto py-6 sm:py-12">
+        <h3 className="text-lg sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-8 text-center">
           Common Questions
         </h3>
-        <div className="divide-y border border-gray-300 dark:border-gray-700 rounded-xl backdrop-blur-xl bg-white/20 dark:bg-black/20">
+        <div className="divide-y border border-gray-300 dark:border-gray-700 rounded-xl backdrop-blur-xl bg-white/20 dark:bg-black/20 text-xs sm:text-base">
           {/* FAQ items using Disclosure for accordion */}
           {[
             {
@@ -227,9 +237,9 @@ function Landing() {
         <button
           onClick={() => toggleDarkMode(!isDark)}
           aria-label="Toggle dark mode"
-          className="mt-4 p-2 rounded-full hover:bg-purple-600 dark:hover:bg-purple-700 transition-colors"
+          className="btn btn-ghost btn-circle mt-4 hover:bg-purple-600 dark:hover:bg-purple-700"
         >
-          <i className={`text-xl ${isDark ? "ri-sun-line text-white" : "ri-moon-line text-black"}`}></i>
+          <i className={`text-xl ${isDark ? "ri-sun-line" : "ri-moon-line"}`}></i>
         </button>
       </footer>
     </div>

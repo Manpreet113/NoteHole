@@ -1,6 +1,5 @@
-// Tasks.jsx
-// Task manager page: create, complete, delete, and filter tasks (Supabase sync for logged-in users, localStorage for guests)
 import { useState, useEffect, useMemo, useRef } from 'react';
+import { motion } from 'framer-motion';
 import { parseText } from '../utils/parseText';
 import FloatingButton from '../components/FloatingButton';
 import useAuthStore from '../store/useAuthStore';
@@ -11,6 +10,7 @@ import toast from 'react-hot-toast';
 import Fuse from 'fuse.js';
 import { encryptData, decryptData } from '../utils/e2ee';
 import { Pencil, Trash2 } from 'lucide-react';
+import { setPageSEO } from '../utils/seo.js';
 
 // Supabase helpers
 async function fetchTasks(userId) {
@@ -132,13 +132,6 @@ function Tasks() {
     }
   }, [editingId]);
 
-  const fuse = useMemo(() => {
-    return new Fuse(tasks, {
-      keys: ['name'],
-      threshold: 0.3,
-    });
-  }, [tasks]);
-
   // Only render after all hooks
   if (authLoading || (userId && !e2eeKey) || !dataReady) {
     return <div className="text-center text-gray-500 mb-4">Loading...</div>;
@@ -158,6 +151,30 @@ function Tasks() {
     setEditText('');
   };
 
+  // Focus edit input when editing
+  useEffect(() => {
+    if (editingId && editInputRef.current) {
+      editInputRef.current.focus();
+    }
+  }, [editingId]);
+
+  // Set SEO for Tasks page
+  useEffect(() => {
+    setPageSEO({
+      title: 'Tasks – NoteHole',
+      description: 'Track, complete, and manage your tasks. Minimalist productivity with offline support and instant search.',
+      canonical: 'https://notehole.pages.dev/tasks'
+    });
+  }, []);
+
+  // Memoized Fuse instance for fuzzy search
+  const fuse = useMemo(() => {
+    return new Fuse(tasks, {
+      keys: ['name'],
+      threshold: 0.3,
+    });
+  }, [tasks]);
+
   // Filtered tasks based on search and filter
   const filtered =
     searchQuery.trim() === ''
@@ -176,25 +193,36 @@ function Tasks() {
           });
 
   return (
-    <div>
+    <div className="min-h-screen text-black dark:text-white flex flex-col text-xs sm:text-base">
       <h1 className="text-4xl font-bold mb-6">Task Manager</h1>
       {/* Show loading or saving state */}
       {loading && <div className="text-center text-gray-500 mb-4">Saving...</div>}
       {/* New task input */}
-      <input
-        type="text"
-        value={newTask}
-        onChange={(e) => setNewTask(e.target.value)}
-        onKeyDown={(e) => {
+      <form
+        onSubmit={e => { e.preventDefault(); handleAddTask(); }}
+        className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-6 sm:mb-8"
+      >
+        <input
+          type="text"
+          placeholder="New task..."
+          value={newTask}
+          onKeyDown={(e) => {
           if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             handleAddTask();
           }
         }}
-        className="w-full px-4 py-2 bg-white/5 border border-purple-400/40 rounded-xl backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-        placeholder="Add a task... (e.g., @idea:dark-mode)"
-        disabled={loading}
-      />
+          className="flex-1 px-2 sm:px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-gray-900/70 text-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs sm:text-base"
+          required
+        />
+        <button
+          type="submit"
+          className="bg-purple-600 text-white px-4 sm:px-6 py-2 rounded-lg font-semibold hover:bg-purple-700 transition-colors text-xs sm:text-base"
+          disabled={loading}
+        >
+          Add
+        </button>
+      </form>
       {/* Filter buttons */}
       <div className="my-6 flex gap-4">
         {['all', 'pending', 'completed'].map((type) => (
@@ -213,11 +241,15 @@ function Tasks() {
         ))}
       </div>
       {/* Task list */}
-      <ul className="space-y-3">
+      <ul className="space-y-2 sm:space-y-4">
         {filtered.map((task) => (
-          <li
+          <motion.li
             key={task.id}
-            className="bg-white/10 dark:bg-white/5 border border-purple-200/10 backdrop-blur-md p-4 rounded-lg flex items-center justify-between shadow-md"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 16 }}
+            transition={{ duration: 0.22, ease: 'easeOut' }}
+            className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-3 sm:p-6 shadow-md flex flex-col gap-1 sm:gap-2"
           >
             {editingId === task.id ? (
               <div className="flex w-full space-x-2">
@@ -278,22 +310,24 @@ function Tasks() {
                       setEditingId(task.id);
                       setEditText(task.name);
                     }}
-                    className="text-yellow-500 hover:text-yellow-700 text-sm"
+                    className="btn btn-ghost btn-sm text-yellow-500 hover:text-yellow-700"
                     disabled={loading}
+                    title="Edit"
                   >
-                    <Pencil className="inline" size={16} />
+                    <Pencil size={18} />
                   </button>
                   <button
                     onClick={() => deleteTask(task.id)}
-                    className="text-red-400 hover:text-red-600 text-sm"
+                    className="btn btn-ghost btn-sm text-red-400 hover:text-red-600"
                     disabled={loading}
+                    title="Delete"
                   >
-                    <Trash2 className="inline" size={16} />
+                    <Trash2 size={18} />
                   </button>
                 </div>
               </>
             )}
-          </li>
+          </motion.li>
         ))}
       </ul>
       {/* Floating add button */}
