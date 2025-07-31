@@ -13,7 +13,7 @@ function Ideas() {
   // All hooks at the top
   const { user, loading: authLoading, e2eeKey } = useAuthStore();
   const userId = user?.id;
-  const { ideas, loading, dataReady, fetchIdeas, addIdea, editIdea, deleteIdea, reset } = useIdeasStore();
+  const { ideas, loading, hydrated, fetchIdeas, addIdea, editIdea, deleteIdea } = useIdeasStore();
   const [newTitle, setNewTitle] = useState('');
   const [newDesc, setNewDesc] = useState('');
   const [editingId, setEditingId] = useState(null);
@@ -23,14 +23,10 @@ function Ideas() {
   const { searchQuery, setIdeas: setSearchIdeas } = useSearchStore();
 
   useEffect(() => {
-    if (authLoading) return;
-    if (userId && !e2eeKey) return;
-    if (userId && e2eeKey) {
+    if (hydrated && user && e2eeKey) {
       fetchIdeas();
-    } else {
-      reset();
     }
-  }, [userId, e2eeKey, authLoading, fetchIdeas, reset]);
+  }, [hydrated, user, e2eeKey, fetchIdeas]);
 
   useEffect(() => {
     setSearchIdeas(ideas);
@@ -84,7 +80,7 @@ function Ideas() {
   }, [ideas]);
 
     // Only render after all hooks
-  if (authLoading || (userId && !e2eeKey) || !dataReady) {
+  if (!hydrated) {
     return <div className="text-center text-gray-500 mb-4">Loading...</div>;
   }
   

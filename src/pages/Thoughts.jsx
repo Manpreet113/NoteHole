@@ -13,22 +13,19 @@ function Thoughts() {
   // All hooks at the top
   const { user, loading: authLoading, e2eeKey } = useAuthStore();
   const userId = user?.id;
-  const { thoughts, loading, dataReady, fetchThoughts, addThought, editThought, deleteThought, reset } = useThoughtsStore();
+  const { thoughts, loading, hydrated, fetchThoughts, addThought, editThought, deleteThought } = useThoughtsStore();
   const [newThought, setNewThought] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState('');
   const editInputRef = useRef(null);
   const { searchQuery, setThoughts: setSearchThoughts } = useSearchStore();
 
+
   useEffect(() => {
-    if (authLoading) return;
-    if (userId && !e2eeKey) return;
-    if (userId && e2eeKey) {
+    if (hydrated && user && e2eeKey) {
       fetchThoughts();
-    } else {
-      reset();
     }
-  }, [userId, e2eeKey, authLoading, fetchThoughts, reset]);
+  }, [hydrated, user, e2eeKey, fetchThoughts]);
 
   useEffect(() => {
     setSearchThoughts(thoughts);
@@ -58,7 +55,7 @@ function Thoughts() {
   }, [thoughts]);
 
   // Only render after all hooks
-  if (authLoading || (userId && !e2eeKey) || !dataReady) {
+  if (!hydrated) {
     return <div className="text-center text-gray-500 mb-4">Loading...</div>;
   }
 

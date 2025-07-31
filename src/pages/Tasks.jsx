@@ -13,7 +13,7 @@ function Tasks() {
   // All hooks at the top
   const { user, loading: authLoading, e2eeKey } = useAuthStore();
   const userId = user?.id;
-  const { tasks, loading, dataReady, fetchTasks, addTask, editTask, toggleTask, deleteTask, reset } = useTasksStore();
+  const { tasks, loading, hydrated, fetchTasks, addTask, editTask, toggleTask, deleteTask } = useTasksStore();
   const [newTask, setNewTask] = useState('');
   const [filter, setFilter] = useState('all');
   const [editingId, setEditingId] = useState(null);
@@ -22,14 +22,10 @@ function Tasks() {
   const { searchQuery, setTasks: setTasksTasks } = useSearchStore();
 
   useEffect(() => {
-    if (authLoading) return;
-    if (userId && !e2eeKey) return;
-    if (userId && e2eeKey) {
+    if (hydrated && user && e2eeKey) {
       fetchTasks();
-    } else {
-      reset();
     }
-  }, [userId, e2eeKey, authLoading, fetchTasks, reset]);
+  }, [hydrated, user, e2eeKey, fetchTasks]);
 
   useEffect(() => {
     setTasksTasks(tasks);
@@ -81,7 +77,7 @@ function Tasks() {
   }, [tasks]);
   
   // Only render after all hooks
-  if (authLoading || (userId && !e2eeKey) || !dataReady) {
+  if (!hydrated) {
     return <div className="text-center text-gray-500 mb-4">Loading...</div>;
   }
 
