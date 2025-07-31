@@ -1,13 +1,15 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Pencil, Trash2 } from 'lucide-react';
 import { parseText } from '../utils/parseText';
 import useSearchStore from '../store/useSearchStore';
 import useAuthStore from '../store/useAuthStore';
+import useIdeasStore from '../store/useIdeasStore';
 import { supabase } from '../components/supabaseClient';
 import FloatingButton from '../components/FloatingButton';
 import toast from 'react-hot-toast';
 import Fuse from 'fuse.js';
+import { encryptData, decryptData } from '../utils/e2ee';
+import { Pencil, Trash2 } from 'lucide-react';
 import { setPageSEO } from '../utils/seo.js';
 
 // Supabase helpers
@@ -99,150 +101,57 @@ function useIdeaSync(userId, addIdeaToSupabase, setIdeas) {
 }
 
 function Ideas() {
-  const { user, loading: authLoading } = useAuthStore();
+  // All hooks at the top
+  const { user, loading: authLoading, e2eeKey } = useAuthStore();
   const userId = user?.id;
-  const [ideas, setIdeas] = useState([]);
+  const { ideas, loading, dataReady, fetchIdeas, addIdea, editIdea, deleteIdea, reset } = useIdeasStore();
   const [newTitle, setNewTitle] = useState('');
   const [newDesc, setNewDesc] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [editTitle, setEditTitle] = useState('');
   const [editDesc, setEditDesc] = useState('');
-  const [loadingFetch, setLoadingFetch] = useState(false);
-  const [loadingAction, setLoadingAction] = useState(false);
   const editTitleRef = useRef(null);
-
-  // Global search query from store
   const { searchQuery, setIdeas: setSearchIdeas } = useSearchStore();
 
-  // Load ideas from Supabase or localStorage on mount or login/logout
   useEffect(() => {
-    if (authLoading) {
-      return;
+    if (authLoading) return;
+    if (userId && !e2eeKey) return;
+    if (userId && e2eeKey) {
+      fetchIdeas();
+    } else {
+      reset();
     }
-    
-    const loadIdeas = async () => {
-      setLoadingFetch(true);
-      if (userId) {
-        try {
-          const data = await fetchIdeas(userId);
-          setIdeas(data || []);
-        } catch (e) {
-          console.error('Failed to fetch ideas from Supabase:', e);
-          setIdeas([]);
-          toast.error('Failed to fetch ideas from Supabase');
-        }
-      } else {
-        const saved = localStorage.getItem('ideas');
-        setIdeas(saved ? JSON.parse(saved) : []);
-      }
-      setLoadingFetch(false);
-    };
-    loadIdeas();
-  }, [userId, authLoading]);
+  }, [userId, e2eeKey, authLoading, fetchIdeas, reset]);
 
-  // Sync ideas with search store whenever ideas change
   useEffect(() => {
     setSearchIdeas(ideas);
   }, [ideas, setSearchIdeas]);
 
-  // Persist to localStorage if not logged in
   useEffect(() => {
-    if (!authLoading && !userId) {
-    const isHydrated = JSON.parse(localStorage.getItem('ideas') || '[]');
-
-    // Only save if there's something to actually persist
-    if (ideas.length > 0) {
-      localStorage.setItem('ideas', JSON.stringify(ideas));
+    if (editingId && editTitleRef.current) {
+      editTitleRef.current.focus();
     }
+  }, [editingId]);
 
-    // Optional: prevent overwriting if data already exists
-    else if (isHydrated.length > 0) {
-      // Don't overwrite localStorage with empty state
-    }
+  // Only render after all hooks
+  if (authLoading || (userId && !e2eeKey) || !dataReady) {
+    return <div className="text-center text-gray-500 mb-4">Loading...</div>;
   }
-}, [ideas, userId, authLoading]);
 
   // Add a new idea
-  const addIdea = async () => {
+  const handleAddIdea = async () => {
     if (!newTitle.trim()) return;
-    setLoadingAction(true);
-    const idea = {
-      id: crypto.randomUUID(),
-      title: newTitle,
-      description: newDesc,
-      created_at: new Date().toISOString(),
-    };
-    if (userId && navigator.onLine) {
-      try {
-        const saved = await addIdeaToSupabase(idea, userId);
-        setIdeas([saved, ...ideas]);
-        toast.success('Idea added!');
-      } catch (e) {
-        console.error('Failed to add idea to Supabase:', e);
-        toast.error('Failed to add idea');
-      }
-    } else {
-      // Save locally with synced: false
-      const offlineIdea = { ...idea, synced: false };
-      const saved = localStorage.getItem('ideas');
-      let arr = [];
-      try {
-        arr = saved ? JSON.parse(saved) : [];
-        if (!Array.isArray(arr)) arr = [];
-      } catch { arr = []; }
-      arr.unshift(offlineIdea);
-      localStorage.setItem('ideas', JSON.stringify(arr));
-      setIdeas([offlineIdea, ...ideas]);
-      toast.success('Idea added locally!');
-    }
+    await addIdea(newTitle, newDesc);
     setNewTitle('');
     setNewDesc('');
-    setLoadingAction(false);
   };
 
-  // Save edits to an idea (handles both online and offline)
-  const saveEdit = async (id) => {
-    setLoadingAction(true);
-    if (userId) {
-      try {
-        const updated = await updateIdeaInSupabase({ id, title: editTitle, description: editDesc }, userId);
-        setIdeas(ideas.map((idea) => (idea.id === id ? updated : idea)));
-        toast.success('Idea updated!');
-      } catch (e) {
-        toast.error('Failed to update idea');
-      }
-    } else {
-      setIdeas(
-        ideas.map((idea) =>
-          idea.id === id
-            ? { ...idea, title: editTitle, description: editDesc }
-            : idea
-        )
-      );
-      toast.success('Idea updated locally!');
-    }
+  // Save edits to an idea
+  const handleSaveEdit = async (id) => {
+    await editIdea(id, editTitle, editDesc);
     setEditingId(null);
     setEditTitle('');
     setEditDesc('');
-    setLoadingAction(false);
-  };
-
-  // Delete an idea (handles both online and offline)
-  const deleteIdea = async (id) => {
-    setLoadingAction(true);
-    if (userId) {
-      try {
-        await deleteIdeaFromSupabase(id, userId);
-        setIdeas(ideas.filter((i) => i.id !== id));
-        toast.success('Idea deleted!');
-      } catch (e) {
-        toast.error('Failed to delete idea');
-      }
-    } else {
-      setIdeas(ideas.filter((i) => i.id !== id));
-      toast.success('Idea deleted locally!');
-    }
-    setLoadingAction(false);
   };
 
   // Focus edit input when editing
@@ -269,7 +178,7 @@ function Ideas() {
       threshold: 0.3,
     });
   }, [ideas]);
-
+  
   // Filtered ideas based on search query
   const filtered =
     searchQuery.trim() === ''
@@ -280,136 +189,141 @@ function Ideas() {
     <div className="min-h-screen text-black dark:text-white flex flex-col text-xs sm:text-base">
       <h1 className="text-4xl font-bold mb-6">Ideas Board</h1>
       {/* Show loading or saving state */}
-      {(loadingFetch || loadingAction) && <div className="text-center text-gray-500 mb-4">{loadingFetch ? 'Loading...' : 'Saving...'}</div>}
+      {loading && <div className="text-center text-gray-500 mb-4">Saving...</div>}
       {/* New idea input */}
-      <main className="flex-1 w-full max-w-xs sm:max-w-3xl lg:max-w-6xl mx-auto px-2 sm:px-6 py-6 sm:py-10">
-        <form
-          onSubmit={e => { e.preventDefault(); addIdea(); }}
-          className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-6 sm:mb-8"
-        >
-          <input
-            type="text"
-            placeholder="New idea title..."
-            value={newTitle}
-            onChange={e => setNewTitle(e.target.value)}
-            className="flex-1 px-2 sm:px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-gray-900/70 text-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs sm:text-base"
-            required
-          />
-          <input
-            type="text"
-            placeholder="Description (optional)"
-            value={newDesc}
-            onChange={e => setNewDesc(e.target.value)}
-            className="flex-1 px-2 sm:px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-gray-900/70 text-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs sm:text-base"
-          />
-          <button
-            type="submit"
-            className="bg-purple-600 text-white px-4 sm:px-6 py-2 rounded-lg font-semibold hover:bg-purple-700 transition-colors text-xs sm:text-base"
-            disabled={loadingAction}
-          >
-            Add
-          </button>
-        </form>
-        {/* Ideas grid */}
-        <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 space-y-4 mt-6">
-          {filtered.map((idea) => (
-            <motion.div
-              key={idea.id}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 16 }}
-              transition={{ duration: 0.22, ease: 'easeOut' }}
-              className="break-inside-avoid mb-4 p-4 bg-white/10 dark:bg-white/5 backdrop-blur-md border border-purple-300/10 rounded-lg shadow-md hover:scale-[1.02] hover:shadow-2xl transition duration-300 cursor-pointer"
-            >
-              {editingId === idea.id ? (
-                <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
-                  {/* Edit idea form */}
-                  <input
-                    ref={editTitleRef}
-                    type="text"
-                    value={editTitle}
-                    onChange={(e) => setEditTitle(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        saveEdit(idea.id);
-                      }
-                    }}
-                    className="w-full p-2 bg-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-800 text-black dark:text-white rounded"
-                    disabled={loadingAction}
-                  />
-                  <textarea
-                    value={editDesc}
-                    onChange={(e) => setEditDesc(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && e.ctrlKey) {
-                        e.preventDefault();
-                        saveEdit(idea.id);
-                      }
-                    }}
-                    className="w-full p-2 bg-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 text-black dark:text-white rounded"
-                    rows="3"
-                    disabled={loadingAction}
-                  />
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => saveEdit(idea.id)}
-                      className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded"
-                      disabled={loadingAction}
-                    >
-                      Save
-                    </button>
-                    <button
-                      onClick={() => setEditingId(null)}
-                      className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded"
-                      disabled={loadingAction}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div onClick={(e) => e.stopPropagation()}>
-                  {/* Render idea title and description */}
-                  <h2 className="text-xl font-semibold mb-2 break-words break-all whitespace-pre-wrap">{idea.title}</h2>
-                  <p className="text-gray-700 dark:text-gray-300 break-words break-all whitespace-pre-wrap overflow-hidden">
-                    {parseText(idea.description)}
-                  </p>
-                  <p className="text-gray-500 text-sm mt-2">
-                    {new Date(idea. created_at).toLocaleString()}
-                  </p>
-                  <div className="mt-2 flex space-x-2 items-center">
-                    {/* Edit button */}
-                    <button
-                      onClick={() => {
-                        setEditingId(idea.id);
-                        setEditTitle(idea.title);
-                        setEditDesc(idea.description);
-                      }}
-                      className="btn btn-ghost btn-sm text-yellow-500 hover:text-yellow-700"
-                      disabled={loadingAction}
-                      title="Edit"
-                    >
-                      <Pencil size={18} />
-                    </button>
-                    {/* Delete button */}
-                    <button
-                      onClick={() => deleteIdea(idea.id)}
-                      className="btn btn-ghost btn-sm text-red-400 hover:text-red-600"
-                      disabled={loadingAction}
-                      title="Delete"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
-                </div>
-              )}
-            </motion.div>
-          ))}
-        </div>
-      </main>
+<main className="flex-1 w-full max-w-xs sm:max-w-3xl lg:max-w-6xl mx-auto px-2 sm:px-6 py-6 sm:py-10">
+  {/* Add new idea form */}
+  <form
+    onSubmit={(e) => {
+      e.preventDefault();
+      handleAddIdea();
+    }}
+    className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-6 sm:mb-8"
+  >
+    <input
+      type="text"
+      value={newTitle}
+      onChange={(e) => setNewTitle(e.target.value)}
+      placeholder="New idea title..."
+      className="flex-1 px-2 sm:px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-gray-900/70 text-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs sm:text-base"
+      disabled={loading}
+      required
+    />
+    <input
+      type="text"
+      value={newDesc}
+      onChange={(e) => setNewDesc(e.target.value)}
+      placeholder="Description (optional)"
+      className="flex-1 px-2 sm:px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-gray-900/70 text-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs sm:text-base"
+      disabled={loading}
+    />
+    <button
+      type="submit"
+      className="bg-purple-600 text-white px-4 sm:px-6 py-2 rounded-lg font-semibold hover:bg-purple-700 transition-colors text-xs sm:text-base"
+      disabled={loading}
+    >
+      Add
+    </button>
+  </form>
+
+  {/* Ideas grid */}
+  <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 space-y-4 mt-6">
+    {filtered.map((idea) => (
+      <motion.div
+        key={idea.id}
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 16 }}
+        transition={{ duration: 0.22, ease: 'easeOut' }}
+        className="break-inside-avoid mb-4 p-4 bg-white/10 dark:bg-white/5 backdrop-blur-md border border-purple-300/10 rounded-lg shadow-md hover:scale-[1.02] hover:shadow-2xl transition duration-300 cursor-pointer"
+      >
+        {editingId === idea.id ? (
+          <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
+            <input
+              ref={editTitleRef}
+              type="text"
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSaveEdit(idea.id);
+                }
+              }}
+              className="w-full p-2 bg-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-800 text-black dark:text-white rounded"
+              disabled={loading}
+            />
+            <textarea
+              value={editDesc}
+              onChange={(e) => setEditDesc(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && e.ctrlKey) {
+                  e.preventDefault();
+                  handleSaveEdit(idea.id);
+                }
+              }}
+              className="w-full p-2 bg-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 text-black dark:text-white rounded"
+              rows="3"
+              disabled={loading}
+            />
+            <div className="flex space-x-2">
+              <button
+                onClick={() => handleSaveEdit(idea.id)}
+                className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded"
+                disabled={loading}
+              >
+                Save
+              </button>
+              <button
+                onClick={() => setEditingId(null)}
+                className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded"
+                disabled={loading}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-xl font-semibold mb-2 break-words break-all whitespace-pre-wrap">
+              {idea.title}
+            </h2>
+            <p className="text-gray-700 dark:text-gray-300 break-words break-all whitespace-pre-wrap overflow-hidden">
+              {parseText(idea.description)}
+            </p>
+            <p className="text-gray-500 text-sm mt-2">
+              {new Date(idea.created_at).toLocaleString()}
+            </p>
+            <div className="mt-2 flex space-x-2 items-center">
+              <button
+                onClick={() => {
+                  setEditingId(idea.id);
+                  setEditTitle(idea.title);
+                  setEditDesc(idea.description);
+                }}
+                className="btn btn-ghost btn-sm text-yellow-500 hover:text-yellow-700"
+                disabled={loading}
+                title="Edit"
+              >
+                <Pencil size={18} />
+              </button>
+              <button
+                onClick={() => deleteIdea(idea.id)}
+                className="btn btn-ghost btn-sm text-red-400 hover:text-red-600"
+                disabled={loading}
+                title="Delete"
+              >
+                <Trash2 size={18} />
+              </button>
+            </div>
+          </div>
+        )}
+      </motion.div>
+    ))}
+  </div>
+</main>
       {/* Floating add button */}
-      <FloatingButton onClick={addIdea} icon="+" label="Add Idea" />
+      <FloatingButton onClick={handleAddIdea} icon="+" label="Add Idea" />
     </div>
   );
 }
