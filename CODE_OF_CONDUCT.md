@@ -25,7 +25,7 @@ We are committed to making NoteHole a friendly, inclusive, and productive place 
 
 ## 3. Reporting
 If you experience or witness unacceptable behavior:
-- Email the maintainers: **team@notehole.dev** (replace with your contact)
+- Email the maintainer: **manpreet10542@gmail.com**
 - Or, reach out privately via the contact info in the repository.
 
 All reports will be reviewed and acted upon confidentially.
