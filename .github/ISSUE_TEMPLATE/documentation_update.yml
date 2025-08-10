@@ -1,0 +1,45 @@
+name: 📚 Documentation Update
+description: Suggest improvements or additions to the documentation
+title: "[DOCS]: "
+labels: ["documentation", "difficulty: easy"]
+assignees: 
+  - SampleAssignee
+
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve our docs! Please provide as much detail as you can.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary of the Update
+      description: Briefly describe what needs to be updated or added in the documentation.
+      placeholder: "E.g., Add a 'Getting Started' section for new contributors."
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-docs
+    attributes:
+      label: Current Documentation
+      description: If applicable, link to or paste the part of the documentation that needs changes.
+      placeholder: "Paste a link to the file or section here."
+
+  - type: textarea
+    id: proposed-changes
+    attributes:
+      label: Proposed Changes
+      description: Explain your suggested edits or additions.
+      placeholder: "Rewrite the intro to be clearer, add installation steps, fix grammar..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any extra information, screenshots, or examples that could help.
+      placeholder: "Screenshot showing missing section..."
