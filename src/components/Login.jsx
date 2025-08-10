@@ -14,6 +14,25 @@ export default function LoginForm() {
   const [error, setError] = useState('');
   const [emailExists, setEmailExists] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [resetMessage, setResetMessage] = useState('');
+  // Handle password reset
+  const handlePasswordReset = async () => {
+    setError('');
+    setResetMessage('');
+    if (!email) {
+      setError('Please enter your email address to reset your password.');
+      return;
+    }
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + '/auth/callback',
+      });
+      if (error) throw new Error(error.message);
+      setResetMessage('Password reset email sent! Check your inbox.');
+    } catch (err) {
+      setError(err.message || 'Failed to send password reset email.');
+    }
+  };
   const navigate = useNavigate();
 
   // Auth actions and state from global store
@@ -116,8 +135,9 @@ export default function LoginForm() {
         >
           {loading ? 'Please wait...' : authMode === 'login' ? 'Sign In' : 'Sign Up'}
         </button>
-        {/* Error message */}
-        {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+  {/* Error and reset message */}
+  {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+  {resetMessage && <p className="text-green-600 text-sm text-center">{resetMessage}</p>}
 
         {/* Switch between login and signup */}
         <p className="text-xs sm:text-sm text-center text-gray-500">
@@ -158,9 +178,16 @@ export default function LoginForm() {
           </button>
         </div>
 
-        {/* Forgot password link (not implemented) */}
+        {/* Forgot password link */}
         <div className="text-center">
-          <a href="#" className="text-xs sm:text-sm text-indigo-600 hover:text-indigo-500">Forgot password?</a>
+          <button
+            type="button"
+            className="text-xs sm:text-sm text-indigo-600 hover:text-indigo-500 underline bg-transparent border-none cursor-pointer"
+            style={{ padding: 0 }}
+            onClick={() => navigate('/reset-password')}
+          >
+            Forgot password?
+          </button>
         </div>
       </div>
     </main>
