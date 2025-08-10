@@ -13,10 +13,8 @@ registerSW({ immediate: true });
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-      {/* Enable client-side routing */}
       <BrowserRouter>
         <App />
-      {/* Toast notifications (top-right) */}
       <Toaster position="top-right" reverseOrder={false} />
     </BrowserRouter>
   </React.StrictMode>
