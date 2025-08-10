@@ -46,7 +46,7 @@ Examples:
 ---
 ## 🔖 Claiming Issues
 
-- Check open issues and look for ones labeled good first issue or #GSSOC.
+- Check open issues.
 
 - Comment “I’d like to work on this” — we’ll assign it to you.
 
