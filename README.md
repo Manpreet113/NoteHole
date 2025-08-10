@@ -66,6 +66,18 @@ BrainDump now includes **client-side encryption** for all your data:
 - **Session isolation** - keys cleared on logout
 - **Guest encryption** - even anonymous users get encrypted storage
 
+## 👋 Want to Contribute?
+
+That's awesome! We'd love your help to make NoteHole even better. Here’s how you can get started:
+- 📜 Contribution Guidelines: Check out our CONTRIBUTING.md to learn about our workflow and how to submit your changes.
+
+- 💖 Code of Conduct: Please read our CODE_OF_CONDUCT.md to understand our community standards.
+
+- 🐛 Find an Issue: Head over to the Issues tab to find bugs, enhancements, or tasks labeled good first issue.
+
+- ✨ Have a New Idea?: Browse our IDEAS.md for new feature inspiration. If you find something you're passionate about, open an issue to discuss it!
+
+
 
 ## 🚧 Disclaimer
 
