@@ -1,5 +1,4 @@
-// Sidebar.jsx
-// Sidebar navigation for main app sections, with theme toggle and login (responsive)
+// Sidebar.jsx: Navigation for major app sections, with theme toggle and login.
 import { Link, useLocation } from 'react-router-dom';
 import {
   Lightbulb,
@@ -17,14 +16,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 function SideBar() {
   const location = useLocation();
-  // Sidebar and theme state from global store
   const { isExpanded, collapseSidebar, toggleSidebar } = useSidebarStore();
   const { isDark, toggleDarkMode } = useDarkModeStore();
-  // Remove local state for tiny screens and use Tailwind breakpoints
-  // Remove all isTinyScreen logic and replace with sm: and md: classes
-  // Update SidebarContent and sidebar containers to use responsive padding, font sizes, and visibility
 
-  // Navigation links for sidebar
   const links = [
     {
       path: '/thoughts',
@@ -46,17 +40,7 @@ function SideBar() {
     },
   ];
 
-  // Detect tiny screens for responsive UI
-  useEffect(() => {
-    const handleResize = () => {
-      // setIsTinyScreen(window.innerWidth < 400); // This line is removed
-    };
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  // Sidebar content (links, theme toggle, login)
+  // Sidebar content (links, theme toggle, login).
   const SidebarContent = ({ expanded }) => (
     <nav aria-label="Sidebar Navigation">
       <ul className="flex flex-col gap-4 p-2 sm:gap-6 sm:p-4">
@@ -86,10 +70,8 @@ function SideBar() {
           </li>
         ))}
       </ul>
-      {/* Extra controls for mobile sidebar */}
       <div className="sm:hidden">
         <div className="mt-4 border-t border-white/10 pt-4 space-y-4">
-          {/* 🌙 Theme toggle */}
           <button
             onClick={() => toggleDarkMode(!isDark)}
             className="btn btn-ghost btn-sm flex items-center gap-3 text-white hover:text-yellow-300"
@@ -102,7 +84,6 @@ function SideBar() {
             )}
             <span className="text-sm">Toggle Theme</span>
           </button>
-          {/* 👤 Login link */}
           <Link to="/login" onClick={collapseSidebar}>
             <div className="btn btn-ghost btn-sm flex items-center gap-3 text-white hover:text-purple-500">
               <User className="w-5 h-5" />
@@ -115,13 +96,12 @@ function SideBar() {
   );
 
   const [hovered, setHovered] = useState(false);
-  // Only expand on hover for desktop (sm+)
   const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 640;
   const expanded = isDesktop ? (isExpanded || hovered) : isExpanded;
 
   return (
     <>
-      {/* 🖥️ Desktop Sidebar - Always shown */}
+      {/* Desktop sidebar (always visible). */}
       <motion.div
         initial={{ width: 60, opacity: 0, x: -20 }}
         animate={{ width: expanded ? 160 : 60, opacity: 1, x: 0 }}
@@ -138,7 +118,7 @@ function SideBar() {
         <SidebarContent expanded={expanded} />
       </motion.div>
 
-      {/* 📱 Mobile Sidebar - Slide in only when expanded */}
+      {/* Mobile sidebar (slides in). */}
       <AnimatePresence>
         {isExpanded && (
           <motion.div
@@ -150,7 +130,6 @@ function SideBar() {
             className="sm:hidden fixed top-0 left-0 h-full w-40 z-50 
               bg-black/90 backdrop-blur-xl p-4 shadow-xl border-r border-gray-700"
           >
-            {/* ❌ Close button (top-left) */}
             <button
               onClick={collapseSidebar}
               className="absolute top-3 left-3 p-1 rounded-md hover:bg-purple-700 text-white transition-colors"

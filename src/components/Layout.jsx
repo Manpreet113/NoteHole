@@ -11,10 +11,9 @@ import { AnimatePresence, motion } from 'framer-motion';
 
 const Layout = () => {
   const location = useLocation();
-  // Modal state setters from global store
   const { setShowSearch, setShowCheatsheet } = useModalStore();
 
-  // Listen for Escape key to close modals
+  // Closes modals when the Escape key is pressed.
   useEffect(() => {
     const handleKey = (e) => {
       if (e.key === 'Escape') {
@@ -27,7 +26,6 @@ const Layout = () => {
   }, [setShowSearch, setShowCheatsheet]);
 
   return (
-    // Main app layout: sidebar, nav, modals, and routed content
     <div className="pt-15 overflow-x-hidden flex h-screen relative bg-gray-50 dark:bg-black text-black dark:text-white">
       <GradientBackground />
       <nav aria-label="Sidebar Navigation">
@@ -38,7 +36,6 @@ const Layout = () => {
         <GlobalHotkeys />
         <SearchModal />
         <ShortcutCheatsheet />
-        {/* Main routed page content */}
         <AnimatePresence mode="wait">
           <motion.main
             key={location.pathname}

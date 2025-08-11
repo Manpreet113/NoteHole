@@ -1,5 +1,4 @@
-// SearchModal.jsx
-// Modal component for searching across all app data using fuzzy search (Fuse.js)
+// SearchModal.jsx: A modal for searching across all app data.
 import { Dialog } from '@headlessui/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState, useMemo } from 'react';
@@ -9,20 +8,16 @@ import { useNavigate } from 'react-router-dom';
 import Fuse from 'fuse.js';
 
 export default function SearchModal() {
-  // Modal visibility state from global store
   const { showSearch, setShowSearch } = useModalStore();
-  // Get data from global store
   const { ideas, tasks, thoughts } = useSearchStore();
-  // Local state for search query and results
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const navigate = useNavigate();
 
-  // Memoized combined data for search
+  // Combines all data into a single array for searching.
   const combinedData = useMemo(() => {
     const combined = [];
     
-    // Add ideas with type and searchable fields
     ideas.forEach(idea => {
       combined.push({
         id: idea.id,
@@ -34,20 +29,18 @@ export default function SearchModal() {
       });
     });
 
-    // Add tasks with type and searchable fields
     tasks.forEach(task => {
       combined.push({
         id: task.id,
         type: 'tasks',
         title: task.name,
-        content: task.name, // Tasks only have name field
+        content: task.name, // Tasks only have a name.
         is_done: task.is_done,
          created_at: task. created_at,
         originalData: task
       });
     });
 
-    // Add thoughts with type and searchable fields
     thoughts.forEach(thought => {
       combined.push({
         id: thought.id,
@@ -62,14 +55,14 @@ export default function SearchModal() {
     return combined;
   }, [ideas, tasks, thoughts]);
 
-  // Memoized Fuse.js instance for fuzzy searching
+  // Fuzzy search with Fuse.js.
   const fuse = useMemo(() => new Fuse(combinedData, {
     keys: ['title', 'content'],
     threshold: 0.3,
     includeScore: true,
   }), [combinedData]);
 
-  // Update results when query or data changes
+  // Updates results when the query or data changes.
   useEffect(() => {
     if (!query) {
       setResults([]);
@@ -79,7 +72,7 @@ export default function SearchModal() {
     }
   }, [query, fuse]);
 
-  // Group results by type
+  // Groups results by type (ideas, tasks, thoughts).
   const groupedResults = useMemo(() => {
     const groups = {
       ideas: [],
@@ -96,14 +89,13 @@ export default function SearchModal() {
     return groups;
   }, [results]);
 
-  // Navigate to the selected item's page and close modal
+  // Navigates to the selected item's page.
   const handleNavigate = (item) => {
     setShowSearch(false);
-    // Navigate to the appropriate page (the item will be highlighted by search query)
     navigate(`/${item.type}`);
   };
 
-  // Get section title and icon
+  // Gets the title and icon for each section.
   const getSectionInfo = (type) => {
     switch (type) {
       case 'ideas': return { title: '\ud83d\udca1 Ideas', count: groupedResults.ideas.length };
@@ -126,10 +118,8 @@ export default function SearchModal() {
               className="bg-white/10 backdrop-blur-xl dark:bg-black/20 border border-white/20 dark:border-gray-800 p-3 sm:p-6 rounded-2xl w-full max-w-xs sm:max-w-2xl shadow-xl"
             >
               <Dialog.Title className="text-lg sm:text-xl font-semibold mb-4 text-white">
-                {/* Modal title */}
                  Search Anything
               </Dialog.Title>
-              {/* Search input */}
               <input
                 type="text"
                 autoFocus
@@ -138,23 +128,18 @@ export default function SearchModal() {
                 onChange={(e) => setQuery(e.target.value)}
                 className="w-full p-2 sm:p-3 text-base sm:text-lg text-white bg-white/5 border border-white/20 rounded-md placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-white/30 mb-4"
               />
-              {/* Search results with sections */}
               <div className="max-h-80 sm:max-h-96 overflow-y-auto">
-                {/* No results message */}
                 {results.length === 0 && query !== '' && (
                   <p className="text-center text-sm text-gray-400 py-4">No results found</p>
                 )}
-                {/* No query message */}
                 {query === '' && (
                   <p className="text-center text-sm text-gray-400 py-4">Start typing to search...</p>
                 )}
-                {/* Render results grouped by type */}
                 {Object.entries(groupedResults).map(([type, items]) => {
                   if (items.length === 0) return null;
                   const sectionInfo = getSectionInfo(type);
                   return (
                     <div key={type} className="mb-6">
-                      {/* Section header */}
                       <div className="flex items-center justify-between mb-3 pb-2 border-b border-white/10">
                         <h3 className="text-white font-semibold text-xs sm:text-sm">
                           {sectionInfo.title}
@@ -163,7 +148,6 @@ export default function SearchModal() {
                           {sectionInfo.count}
                         </span>
                       </div>
-                      {/* Section items */}
                       <div className="space-y-2">
                         {items.map((item) => (
                           <div
@@ -171,7 +155,6 @@ export default function SearchModal() {
                             onClick={() => handleNavigate(item)}
                             className="p-3 rounded-md cursor-pointer bg-white/5 hover:bg-white/10 border border-white/10 transition-colors"
                           >
-                            {/* Item title and content preview */}
                             <div className="text-white font-medium text-xs sm:text-sm mb-1">
                               {item.title}
                             </div>

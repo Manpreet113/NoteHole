@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../components/supabaseClient";
-import useAuthStore from "../../store/useAuthStore"; // or your Zustand store
+import useAuthStore from "../../store/useAuthStore";
 
 const OAuthCallback = () => {
   const navigate = useNavigate();

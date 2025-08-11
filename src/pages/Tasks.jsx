@@ -10,9 +10,7 @@ import { Pencil, Trash2 } from 'lucide-react';
 import { setPageSEO } from '../utils/seo.js';
 
 function Tasks() {
-  // All hooks at the top
-  const { user, loading: authLoading, e2eeKey } = useAuthStore();
-  const userId = user?.id;
+  const { user, e2eeKey } = useAuthStore();
   const { tasks, loading, hydrated, fetchTasks, addTask, editTask, toggleTask, deleteTask } = useTasksStore();
   const [newTask, setNewTask] = useState('');
   const [filter, setFilter] = useState('all');
@@ -39,28 +37,28 @@ function Tasks() {
 
   
 
-  // Add a new task
+  // Adds a new task.
   const handleAddTask = async () => {
     if (!newTask.trim()) return;
     await addTask(newTask);
     setNewTask('');
   };
 
-  // Save edits to a task
+  // Saves an edited task.
   const handleSaveEdit = async (id) => {
     await editTask(id, editText);
     setEditingId(null);
     setEditText('');
   };
 
-  // Focus edit input when editing
+  // Focuses the edit input when a task is being edited.
   useEffect(() => {
     if (editingId && editInputRef.current) {
       editInputRef.current.focus();
     }
   }, [editingId]);
 
-  // Set SEO for Tasks page
+  // SEO for the Tasks page.
   useEffect(() => {
     setPageSEO({
       title: 'Tasks – NoteHole',
@@ -68,7 +66,7 @@ function Tasks() {
       canonical: 'https://notehole.pages.dev/tasks'
     });
   }, []);
-  // Memoized Fuse instance for fuzzy search
+  // Fuzzy search with Fuse.js.
   const fuse = useMemo(() => {
     return new Fuse(tasks, {
       keys: ['name'],
@@ -76,13 +74,12 @@ function Tasks() {
     });
   }, [tasks]);
   
-  // Only render after all hooks
   if (!hydrated) {
     return <div className="text-center text-gray-500 mb-4">Loading...</div>;
   }
 
 
-  // Filtered tasks based on search and filter
+  // Filters tasks based on the search query and the current filter.
   const filtered =
     searchQuery.trim() === ''
       ? tasks.filter((t) => {
@@ -102,9 +99,7 @@ function Tasks() {
   return (
     <div className="min-h-screen text-black dark:text-white flex flex-col text-xs sm:text-base">
       <h1 className="text-4xl font-bold mb-6">Task Manager</h1>
-      {/* Show loading or saving state */}
       {loading && <div className="text-center text-gray-500 mb-4">Saving...</div>}
-      {/* New task input */}
       <form
         onSubmit={e => { e.preventDefault(); handleAddTask(); }}
         className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-6 sm:mb-8"
@@ -131,7 +126,6 @@ function Tasks() {
           Add
         </button>
       </form>
-      {/* Filter buttons */}
       <div className="my-6 flex gap-4">
         {['all', 'pending', 'completed'].map((type) => (
           <button
@@ -148,10 +142,9 @@ function Tasks() {
           </button>
         ))}
       </div>
-      {/* Task list */}
       <ul className="space-y-2 sm:space-y-4">
         {filtered.map((task) => (
-          <motion.li
+          <li
             key={task.id}
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -201,13 +194,13 @@ function Tasks() {
                     className="h-5 w-5 text-purple-600"
                     disabled={loading}
                   />
-                  <span
+                  <div
                     className={`text-base ${
                       task.is_done ? 'line-through text-gray-500' : ''
                     }`}
                   >
                     {parseText(task.name)}
-                  </span>
+                  </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-xs text-gray-400">
@@ -235,10 +228,9 @@ function Tasks() {
                 </div>
               </>
             )}
-          </motion.li>
+          </li>
         ))}
       </ul>
-      {/* Floating add button */}
       <FloatingButton onClick={handleAddTask} icon="+" label="Add Task" />
     </div>
   );
