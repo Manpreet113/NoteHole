@@ -116,8 +116,8 @@ export default function LoginForm() {
         >
           {loading ? 'Please wait...' : authMode === 'login' ? 'Sign In' : 'Sign Up'}
         </button>
-        {/* Error message */}
-        {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+  {/* Error message */}
+  {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
         {/* Switch between login and signup */}
         <p className="text-xs sm:text-sm text-center text-gray-500">
@@ -158,9 +158,16 @@ export default function LoginForm() {
           </button>
         </div>
 
-        {/* Forgot password link (not implemented) */}
+        {/* Forgot password link */}
         <div className="text-center">
-          <a href="#" className="text-xs sm:text-sm text-indigo-600 hover:text-indigo-500">Forgot password?</a>
+          <button
+            type="button"
+            className="text-xs sm:text-sm text-indigo-600 hover:text-indigo-500 underline bg-transparent border-none cursor-pointer"
+            style={{ padding: 0 }}
+            onClick={() => navigate('/reset-password')}
+          >
+            Forgot password?
+          </button>
         </div>
       </div>
     </main>
