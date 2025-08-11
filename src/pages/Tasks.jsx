@@ -6,7 +6,7 @@ import useAuthStore from '../store/useAuthStore';
 import useSearchStore from '../store/useSearchStore';
 import useTasksStore from '../store/useTasksStore';
 import Fuse from 'fuse.js';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Info, Pencil, Trash2 } from 'lucide-react';
 import { setPageSEO } from '../utils/seo.js';
 
 function Tasks() {
@@ -104,23 +104,33 @@ function Tasks() {
         onSubmit={e => { e.preventDefault(); handleAddTask(); }}
         className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-6 sm:mb-8"
       >
-        <input
-          type="text"
-          placeholder="New task..."
-          value={newTask}
-          onChange={(e) => setNewTask(e.target.value)}
-          onKeyDown={(e) => {
-          if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            handleAddTask();
-          }
-        }}
-          className="flex-1 px-2 sm:px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-gray-900/70 text-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs sm:text-base"
-          required
-        />
+        <div className="flex flex-col-reverse w-full gap-2 mb-2">
+          <label className="flex sm:items-center text-xs gap-1" htmlFor="task">
+            <Info className="w-3 h-3 pt-0.5 sm:pt-0"/>            
+            <span className="text-wrap">
+              You can use Markdown for formatting (<em>italic</em>, <strong>bold</strong>, <code className='bg-gray-800 px-1 py-0.5 rounded-md'>code</code>)
+            </span>
+          </label>
+          <input
+            type="text"
+            name="task"
+            id="task"
+            placeholder="New task..."
+            value={newTask}
+            onChange={(e) => setNewTask(e.target.value)}
+            onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              handleAddTask();
+            }
+          }}
+            className="flex-1 px-2 sm:px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-gray-900/70 text-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs sm:text-base"
+            required
+          />
+        </div>
         <button
           type="submit"
-          className="bg-purple-600 text-white px-4 sm:px-6 py-2 rounded-lg font-semibold hover:bg-purple-700 transition-colors text-xs sm:text-base"
+          className="bg-purple-600 self-start text-white px-4 sm:px-6 py-2 rounded-lg font-semibold hover:bg-purple-700 transition-colors text-xs sm:text-base"
           disabled={loading}
         >
           Add

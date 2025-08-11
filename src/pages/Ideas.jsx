@@ -6,7 +6,7 @@ import useAuthStore from '../store/useAuthStore';
 import useIdeasStore from '../store/useIdeasStore';
 import FloatingButton from '../components/FloatingButton';
 import Fuse from 'fuse.js';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Info, Pencil, Trash2 } from 'lucide-react';
 import { setPageSEO } from '../utils/seo.js';
 
 function Ideas() {
@@ -103,21 +103,31 @@ function Ideas() {
       value={newTitle}
       onChange={(e) => setNewTitle(e.target.value)}
       placeholder="New idea title..."
-      className="flex-1 px-2 sm:px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-gray-900/70 text-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs sm:text-base"
+      className="flex-1 px-2 sm:px-4 py-2 rounded-lg border self-start border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-gray-900/70 text-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs sm:text-base"
       disabled={loading}
       required
     />
-    <input
-      type="text"
-      value={newDesc}
-      onChange={(e) => setNewDesc(e.target.value)}
-      placeholder="Description (optional)"
-      className="flex-1 px-2 sm:px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-gray-900/70 text-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs sm:text-base"
-      disabled={loading}
-    />
+    <div className="flex flex-col-reverse gap-2 mb-2">
+      <label className="flex sm:items-center text-xs gap-1" htmlFor="idea">
+        <Info className="w-3 h-3 pt-0.5 sm:pt-0"/>            
+        <span className="text-wrap">
+          You can use Markdown for formatting (<em>italic</em>, <strong>bold</strong>, <code className='bg-gray-800 px-1 py-0.5 rounded-md'>code</code>)
+        </span>
+      </label>
+      <input
+        name="idea"
+        id="idea"
+        type="text"
+        value={newDesc}
+        onChange={(e) => setNewDesc(e.target.value)}
+        placeholder="Description (optional)"
+        className="flex-1 px-2 sm:px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-gray-900/70 text-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs sm:text-base"
+        disabled={loading}
+        />
+      </div>
     <button
       type="submit"
-      className="bg-purple-600 text-white px-4 sm:px-6 py-2 rounded-lg font-semibold hover:bg-purple-700 transition-colors text-xs sm:text-base"
+      className="bg-purple-600 self-start text-white px-4 sm:px-6 py-2 rounded-lg font-semibold hover:bg-purple-700 transition-colors text-xs sm:text-base"
       disabled={loading}
     >
       Add
