@@ -1,5 +1,4 @@
-// App.jsx
-// Main app component: sets up routing and context providers for the application
+// App.jsx: Main component for routing and context providers.
 import { Routes, Route } from 'react-router-dom';
 import Landing from './pages/Landing';
 import Thoughts from './pages/Thoughts';
@@ -11,19 +10,18 @@ import OAuthCallback from './pages/auth/Callback';
 
 function App() {
   return (
-    // Main app routes
     <Routes>
-      {/* Public landing page */}
+      {/* Public landing page. */}
       <Route path="/" element={<Landing />} />
-      {/* Main app layout with nested routes */}
+      {/* Main app layout. */}
       <Route element={<Layout />} >
         <Route path="/thoughts" element={<Thoughts />} />
         <Route path="/ideas" element={<Ideas />} />
         <Route path="/tasks" element={<Tasks />} />
       </Route>
-      {/* Login page (outside main layout) */}
+      {/* Standalone login page. */}
       <Route path="/login" element={<LoginForm />} />
-      {/* OAuth callback handler */}
+      {/* OAuth callback. */}
       <Route path="/auth/callback" element={<OAuthCallback />} />
     </Routes>
   );

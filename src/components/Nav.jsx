@@ -1,5 +1,4 @@
-// Nav.jsx
-// Top navigation bar: includes hamburger, search, theme toggle, and login link
+// Nav.jsx: Top navigation bar with search, theme toggle, and login.
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import useSearchStore from '../store/useSearchStore';
@@ -11,7 +10,6 @@ import useAuthStore from '../store/useAuthStore';
 import Fuse from 'fuse.js';
 
 function Nav() {
-  // Global state for theme, search, and sidebar
   const { isDark, toggleDarkMode } = useDarkModeStore();
   const { searchQuery, setSearchQuery, ideas, tasks, thoughts } = useSearchStore();
   const { isExpanded, toggleSidebar } = useSidebarStore();
@@ -19,17 +17,15 @@ function Nav() {
   const { user, signOut } = useAuthStore();
   const navigate = useNavigate();
 
-  // Local state for tiny screens
   const [isTinyScreen, setIsTinyScreen] = useState(false);
-  // Dropdown state for avatar menu
   const [showMenu, setShowMenu] = useState(false);
 
-  // Clear search query on route change
+  // Clears the search query when the page changes.
   useEffect(() => {
     setSearchQuery('');
   }, [location.pathname]);
 
-  // Detect tiny screens for responsive UI
+  // Hides the title on small screens.
   useEffect(() => {
     const handleResize = () => {
       setIsTinyScreen(window.innerWidth < 400);
@@ -39,7 +35,7 @@ function Nav() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Fuzzy search logic for nav search
+  // Fuzzy search for the nav bar.
   const [navResults, setNavResults] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const combinedData = [
@@ -81,7 +77,7 @@ function Nav() {
       setShowDropdown(res.length > 0);
     }
   }, [searchQuery, ideas, tasks, thoughts]);
-  // Group results by type
+  // Groups results by type.
   const groupedNavResults = {
     ideas: [],
     tasks: [],
@@ -94,7 +90,6 @@ function Nav() {
   });
 
   return (
-    // Navigation bar container
     <motion.nav
       initial={{ y: -32, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
@@ -103,7 +98,7 @@ function Nav() {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between sm:justify-start gap-4">
 
-        {/* 🍔 Animated Hamburger → ❌ (mobile only) */}
+        {/* Animated hamburger menu for mobile. */}
         <button
           onClick={toggleSidebar}
           className="btn btn-ghost btn-sm sm:hidden"
@@ -114,7 +109,6 @@ function Nav() {
             initial={false}
             animate={isExpanded ? 'open' : 'closed'}
           >
-            {/* Hamburger top line */}
             <motion.span
               className="absolute block h-0.5 w-6 bg-white"
               variants={{
@@ -123,7 +117,6 @@ function Nav() {
               }}
               transition={{ duration: 0.2 }}
             />
-            {/* Hamburger middle line */}
             <motion.span
               className="absolute block h-0.5 w-6 bg-white top-1/2 -translate-y-1/2"
               variants={{
@@ -132,7 +125,6 @@ function Nav() {
               }}
               transition={{ duration: 0.2 }}
             />
-            {/* Hamburger bottom line */}
             <motion.span
               className="absolute block h-0.5 w-6 bg-white bottom-0"
               variants={{
@@ -144,7 +136,6 @@ function Nav() {
           </motion.div>
         </button>
 
-        {/* 🧠  NoteHole Title (hidden on tiny screens) */}
         {!isTinyScreen && (
           <Link to="/" aria-label=' NoteHole Landing Page'><h1
             className="sm:block text-xl sm:text-2xl font-semibold tracking-tight"
@@ -155,7 +146,6 @@ function Nav() {
           </Link>
         )}
 
-        {/* 🔍 Search bar (with title embedded if on tiny screen) */}
         <div className="flex-1">
           <div className="relative w-full">
             <input
@@ -175,7 +165,6 @@ function Nav() {
               }
               aria-label="Search the dump"
             />
-            {/* Dropdown with grouped search results */}
             {showDropdown && (
               <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
                 {navResults.length === 0 && searchQuery !== '' && (
@@ -219,10 +208,8 @@ function Nav() {
           </div>
         </div>
 
-        {/* 🌙 Theme toggle + 👤 Avatar/Login (hidden on tiny) */}
         {!isTinyScreen && (
           <div className="flex items-center gap-3 relative">
-            {/* Theme toggle button */}
             <motion.button
               whileHover={{ scale: 1.13 }}
               whileTap={{ scale: 0.95 }}
@@ -237,7 +224,6 @@ function Nav() {
                 <i className="ri-moon-line text-xl" />
               )}
             </motion.button>
-            {/* User avatar or login button */}
             {user ? (
               <div className="relative">
                 <motion.button
@@ -266,7 +252,6 @@ function Nav() {
                     </div>
                   </div>
                 </motion.button>
-                {/* Dropdown menu for user actions */}
                 {showMenu && (
                   <motion.div
                     initial={{ opacity: 0, y: -8 }}
