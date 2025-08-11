@@ -17,8 +17,10 @@ export default function ResetPassword() {
       return;
     }
     try {
+      const redirectTo = window.location.origin + '/auth/callback';
+      console.log('Redirecting to:', redirectTo);
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.origin + '/auth/callback',
+        redirectTo,
       });
       if (error) throw new Error(error.message);
       setMessage('Password reset email sent! Check your inbox.');
