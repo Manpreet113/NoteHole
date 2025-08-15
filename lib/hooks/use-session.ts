@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 type Sessionstatus = "loading" | "authenticated" | "unauthenticated";
 
-const Mock_USER = { name: "John Doe", email: "john.doe@example.com" };
+const Mock_USER = { name: "John Wick", email: "john.wick@example.com" };
 
 export const useSession = () => {
     const [ status, setStatus ] = useState<Sessionstatus>("loading");
@@ -12,7 +12,7 @@ export const useSession = () => {
     useEffect(() => {
         const timer = setTimeout(() => {
             setStatus("authenticated");
-        }, 15000);
+        }, 1500);
 
         return () => clearTimeout(timer);
     }, []);

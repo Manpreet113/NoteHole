@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 export function UserAccountNav(){
-    const user = { name : "john doe", image: null };
+    const user = { name : "john wick", image: null };
 
     return(
         <DropdownMenu>
