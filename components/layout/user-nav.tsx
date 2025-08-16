@@ -2,8 +2,8 @@
 
 import { useSession } from "@/lib/hooks/use-session";
 import { UserAccountNav } from "./user-account-nav";
-import { Button } from "./ui/button";
-import { Skeleton } from "./ui/skeleton";
+import { Skeleton } from "../ui/skeleton";
+import { NavbarButton } from "../ui/nav";
 
 export function UserNav(){
     const { status } = useSession();
@@ -14,9 +14,9 @@ export function UserNav(){
 
     if (status === "unauthenticated"){
         return (
-            <Button variant="outline" className="h-8">
+            <NavbarButton variant="primary" className="h-8">
                 Login
-            </Button>
+            </NavbarButton>
         );
     }
 

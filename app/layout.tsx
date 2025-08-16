@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { SiteHeader } from "@/components/site-header";
-import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeProvider } from "@/components/layout/theme-provider";
+import { Nav } from "@/components/layout/site-header";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -24,8 +24,9 @@ export default function RootLayout({
         className={`${inter.className}`}
       >
         <ThemeProvider>
-          <SiteHeader />
+          <Nav />
           {children}
+          <div className="h-2000"></div>
         </ThemeProvider>
       </body>
     </html>
