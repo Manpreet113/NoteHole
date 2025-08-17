@@ -196,14 +196,22 @@ function isRecoveryFlow() {
       const hashParams = new URLSearchParams(window.location.hash.slice(1));
       type = hashParams.get('type');
     }
+    console.log('useAuthStore - isRecoveryFlow check:', {
+      href: window.location.href,
+      searchType: url.searchParams.get('type'),
+      hashType: type,
+      isRecovery: type === 'recovery'
+    });
     return type === 'recovery';
-  } catch {
+  } catch (error) {
+    console.log('useAuthStore - Error checking recovery flow:', error);
     return false;
   }
 }
 
 // Only initialize session if not in recovery flow
 if (!isRecoveryFlow()) {
+  console.log('useAuthStore - Not in recovery flow, initializing session logic');
   // Initialize session once at load
   supabase.auth.getSession().then(async ({ data: { session } }) => {
     if (session) {
@@ -221,6 +229,7 @@ if (!isRecoveryFlow()) {
     }
   });
 } else {
+  console.log('useAuthStore - In recovery flow, skipping session initialization');
   // If in recovery flow, just set loading to false
   useAuthStore.getState().setLoading(false);
 }

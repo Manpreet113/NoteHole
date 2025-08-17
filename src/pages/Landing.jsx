@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Disclosure,
   DisclosureButton,
@@ -35,6 +36,27 @@ function Landing() {
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const { user, signOut } = useAuthStore();
   const [showMenu, setShowMenu] = useState(false);
+  const navigate = useNavigate();
+
+  // Check for password recovery flow and redirect to callback
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    let type = url.searchParams.get('type');
+    if (!type && window.location.hash) {
+      const hashParams = new URLSearchParams(window.location.hash.slice(1));
+      type = hashParams.get('type');
+    }
+    
+    if (type === 'recovery') {
+      console.log('Landing: Recovery flow detected, redirecting to /auth/callback');
+      console.log('Landing: Current hash:', window.location.hash);
+      // Use window.location.replace to preserve hash parameters
+      const newUrl = window.location.origin + '/auth/callback' + window.location.hash;
+      console.log('Landing: Redirecting to:', newUrl);
+      window.location.replace(newUrl);
+      return;
+    }
+  }, []);
 
   // Track mouse position for radial gradient
   useEffect(() => {
