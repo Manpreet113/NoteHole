@@ -48,11 +48,8 @@ function Landing() {
     }
     
     if (type === 'recovery') {
-      console.log('Landing: Recovery flow detected, redirecting to /auth/callback');
-      console.log('Landing: Current hash:', window.location.hash);
       // Use window.location.replace to preserve hash parameters
       const newUrl = window.location.origin + '/auth/callback' + window.location.hash;
-      console.log('Landing: Redirecting to:', newUrl);
       window.location.replace(newUrl);
       return;
     }

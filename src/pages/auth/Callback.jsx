@@ -16,29 +16,19 @@ const OAuthCallback = () => {
   const [resetError, setResetError] = useState("");
   const [resetSuccess, setResetSuccess] = useState("");
   useEffect(() => {
-    // Debug current URL
-    console.log('Callback.jsx - Current URL:', window.location.href);
-    console.log('Callback.jsx - Search params:', window.location.search);
-    console.log('Callback.jsx - Hash:', window.location.hash);
-    
     // Always prioritize password recovery if present
     const url = new URL(window.location.href);
     let type = url.searchParams.get('type');
     if (!type && window.location.hash) {
       const hashParams = new URLSearchParams(window.location.hash.slice(1));
       type = hashParams.get('type');
-      console.log('Callback.jsx - Type from hash:', type);
     }
-    console.log('Callback.jsx - Type from search:', url.searchParams.get('type'));
-    console.log('Callback.jsx - Final type value:', type);
     
     if (type === 'recovery') {
-      console.log('Recovery flow detected, setting isRecovery to true');
       setIsRecovery(true);
       // Explicitly return - no other logic should run
       return;
     } else {
-      console.log('No recovery type found, proceeding with OAuth login flow');
       // Only run login/session logic if not recovery
       const finalizeLogin = async () => {
         const { data, error } = await supabase.auth.getSession();
