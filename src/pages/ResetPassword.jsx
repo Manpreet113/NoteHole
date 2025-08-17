@@ -17,10 +17,7 @@ export default function ResetPassword() {
       return;
     }
     try {
-      // Force localhost for development, use origin for production
-      const redirectTo = window.location.hostname === 'localhost' 
-        ? 'http://localhost:5173/auth/callback'
-        : window.location.origin + '/auth/callback';
+      const redirectTo = window.location.origin + '/auth/callback';
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo,
       });

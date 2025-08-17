@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   Disclosure,
   DisclosureButton,
@@ -36,7 +35,6 @@ function Landing() {
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const { user, signOut } = useAuthStore();
   const [showMenu, setShowMenu] = useState(false);
-  const navigate = useNavigate();
 
   // Check for password recovery flow and redirect to callback
   useEffect(() => {
