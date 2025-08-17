@@ -1,7 +1,7 @@
-import { useState } from "react";
+// import { useState } from "react";
 // Callback.jsx
 // Handles OAuth callback: finalizes login and redirects user after authentication
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../components/supabaseClient";
 import useAuthStore from "../../store/useAuthStore"; // or your Zustand store
@@ -10,21 +10,28 @@ const OAuthCallback = () => {
   const navigate = useNavigate();
   const setSession = useAuthStore((state) => state.setSession);
 
-  // Minimal password recovery logic
+  // Password reset (recovery) state
   const [isRecovery, setIsRecovery] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [resetError, setResetError] = useState("");
   const [resetSuccess, setResetSuccess] = useState("");
   useEffect(() => {
+    // Always prioritize password recovery if present
     const url = new URL(window.location.href);
     let type = url.searchParams.get('type');
     if (!type && window.location.hash) {
       const hashParams = new URLSearchParams(window.location.hash.slice(1));
       type = hashParams.get('type');
     }
-    setIsRecovery(type === 'recovery');
-    if (type !== 'recovery') {
-      // Finalize OAuth login and set session
+    
+    if (type === 'recovery') {
+      console.log('Recovery flow detected, setting isRecovery to true');
+      setIsRecovery(true);
+      // Explicitly return - no other logic should run
+      return;
+    } else {
+      console.log('No recovery type found, proceeding with OAuth login flow');
+      // Only run login/session logic if not recovery
       const finalizeLogin = async () => {
         const { data, error } = await supabase.auth.getSession();
         if (error || !data.session) {
