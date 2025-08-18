@@ -7,6 +7,7 @@ import Tasks from './pages/Tasks';
 import LoginForm from './components/Login';
 import Layout from './components/Layout';
 import OAuthCallback from './pages/auth/Callback';
+import ResetPassword from './pages/ResetPassword';
 
 function App() {
   return (
@@ -21,8 +22,10 @@ function App() {
       </Route>
       {/* Standalone login page. */}
       <Route path="/login" element={<LoginForm />} />
-      {/* OAuth callback. */}
-      <Route path="/auth/callback" element={<OAuthCallback />} />
+      {/* Password reset page */}
+      <Route path="/reset-password" element={<ResetPassword />} />
+  {/* OAuth callback handler */}
+  <Route path="/auth/callback" element={<OAuthCallback />} />
     </Routes>
   );
 }

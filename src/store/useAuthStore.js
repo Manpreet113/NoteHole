@@ -187,18 +187,42 @@ const useAuthStore = create(
   )
 );
 
-// Initialize session once at load
-supabase.auth.getSession().then(async ({ data: { session } }) => {
-  if (session) {
-    await useAuthStore.getState().setSession(session);
+// Helper to check if current URL is a password recovery flow
+function isRecoveryFlow() {
+  try {
+    const url = new URL(window.location.href);
+    let type = url.searchParams.get('type');
+    if (!type && window.location.hash) {
+      const hashParams = new URLSearchParams(window.location.hash.slice(1));
+      type = hashParams.get('type');
+    }
+    return type === 'recovery';
+  } catch (error) {
+    return false;
   }
-  useAuthStore.getState().setLoading(false);
-});
+}
 
-// Listen to auth state changes globally
-supabase.auth.onAuthStateChange(async (_event, session) => {
-  await useAuthStore.getState().setSession(session);
+// Only initialize session if not in recovery flow
+if (!isRecoveryFlow()) {
+  // Initialize session once at load
+  supabase.auth.getSession().then(async ({ data: { session } }) => {
+    if (session) {
+      await useAuthStore.getState().setSession(session);
+    }
+    useAuthStore.getState().setLoading(false);
+  });
+
+  // Listen to auth state changes globally
+  supabase.auth.onAuthStateChange(async (_event, session) => {
+    // Double-check we're not in recovery flow before processing session
+    if (!isRecoveryFlow()) {
+      await useAuthStore.getState().setSession(session);
+      useAuthStore.getState().setLoading(false);
+    }
+  });
+} else {
+  // If in recovery flow, just set loading to false
   useAuthStore.getState().setLoading(false);
-});
+}
 
 export default useAuthStore;

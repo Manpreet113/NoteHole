@@ -33,7 +33,24 @@ function Landing() {
   const { user, signOut } = useAuthStore();
   const [showMenu, setShowMenu] = useState(false);
 
-  // Tracks the mouse position for a cool radial gradient effect.
+  // Check for password recovery flow and redirect to callback
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    let type = url.searchParams.get('type');
+    if (!type && window.location.hash) {
+      const hashParams = new URLSearchParams(window.location.hash.slice(1));
+      type = hashParams.get('type');
+    }
+    
+    if (type === 'recovery') {
+      // Use window.location.replace to preserve hash parameters
+      const newUrl = window.location.origin + '/auth/callback' + window.location.hash;
+      window.location.replace(newUrl);
+      return;
+    }
+  }, []);
+
+  // Track mouse position for radial gradient
   useEffect(() => {
     let animationFrameId;
     const handleMouseMove = (e) => {
