@@ -6,13 +6,11 @@ import useAuthStore from '../store/useAuthStore';
 import useIdeasStore from '../store/useIdeasStore';
 import FloatingButton from '../components/FloatingButton';
 import Fuse from 'fuse.js';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Info, Pencil, Trash2 } from 'lucide-react';
 import { setPageSEO } from '../utils/seo.js';
 
 function Ideas() {
-  // All hooks at the top
-  const { user, loading: authLoading, e2eeKey } = useAuthStore();
-  const userId = user?.id;
+  const { user, e2eeKey } = useAuthStore();
   const { ideas, loading, hydrated, fetchIdeas, addIdea, editIdea, deleteIdea } = useIdeasStore();
   const [newTitle, setNewTitle] = useState('');
   const [newDesc, setNewDesc] = useState('');
@@ -38,7 +36,7 @@ function Ideas() {
     }
   }, [editingId]);
 
-  // Add a new idea
+  // Adds a new idea.
   const handleAddIdea = async () => {
     if (!newTitle.trim()) return;
     await addIdea(newTitle, newDesc);
@@ -46,7 +44,7 @@ function Ideas() {
     setNewDesc('');
   };
 
-  // Save edits to an idea
+  // Saves an edited idea.
   const handleSaveEdit = async (id) => {
     await editIdea(id, editTitle, editDesc);
     setEditingId(null);
@@ -54,14 +52,14 @@ function Ideas() {
     setEditDesc('');
   };
 
-  // Focus edit input when editing
+  // Focuses the edit input when an idea is being edited.
   useEffect(() => {
     if (editingId && editTitleRef.current) {
       editTitleRef.current.focus();
     }
   }, [editingId]);
 
-  // Set SEO for Ideas page
+  // SEO for the Ideas page.
   useEffect(() => {
     setPageSEO({
       title: 'Ideas – NoteHole',
@@ -70,21 +68,19 @@ function Ideas() {
     });
   }, []);
 
-  // Memoized Fuse instance for fuzzy search
+  // Fuzzy search with Fuse.js.
   const fuse = useMemo(() => {
-    // Only create Fuse if ideas change
     return new Fuse(ideas, {
       keys: ['title', 'description'],
       threshold: 0.3,
     });
   }, [ideas]);
 
-    // Only render after all hooks
   if (!hydrated) {
     return <div className="text-center text-gray-500 mb-4">Loading...</div>;
   }
   
-  // Filtered ideas based on search query
+  // Filters ideas based on the search query.
   const filtered =
     searchQuery.trim() === ''
       ? ideas
@@ -93,11 +89,8 @@ function Ideas() {
   return (
     <div className="min-h-screen text-black dark:text-white flex flex-col text-xs sm:text-base">
       <h1 className="text-4xl font-bold mb-6">Ideas Board</h1>
-      {/* Show loading or saving state */}
       {loading && <div className="text-center text-gray-500 mb-4">Saving...</div>}
-      {/* New idea input */}
 <main className="flex-1 w-full max-w-xs sm:max-w-3xl lg:max-w-6xl mx-auto px-2 sm:px-6 py-6 sm:py-10">
-  {/* Add new idea form */}
   <form
     onSubmit={(e) => {
       e.preventDefault();
@@ -110,31 +103,40 @@ function Ideas() {
       value={newTitle}
       onChange={(e) => setNewTitle(e.target.value)}
       placeholder="New idea title..."
-      className="flex-1 px-2 sm:px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-gray-900/70 text-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs sm:text-base"
+      className="flex-1 px-2 sm:px-4 py-2 rounded-lg border self-start border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-gray-900/70 text-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs sm:text-base"
       disabled={loading}
       required
     />
-    <input
-      type="text"
-      value={newDesc}
-      onChange={(e) => setNewDesc(e.target.value)}
-      placeholder="Description (optional)"
-      className="flex-1 px-2 sm:px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-gray-900/70 text-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs sm:text-base"
-      disabled={loading}
-    />
+    <div className="flex flex-col-reverse gap-2 mb-2">
+      <label className="flex sm:items-center text-xs gap-1" htmlFor="idea">
+        <Info className="w-3 h-3 pt-0.5 sm:pt-0"/>            
+        <span className="text-wrap">
+          You can use Markdown for formatting (<em>italic</em>, <strong>bold</strong>, <code className='bg-gray-800 px-1 py-0.5 rounded-md'>code</code>)
+        </span>
+      </label>
+      <input
+        name="idea"
+        id="idea"
+        type="text"
+        value={newDesc}
+        onChange={(e) => setNewDesc(e.target.value)}
+        placeholder="Description (optional)"
+        className="flex-1 px-2 sm:px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-gray-900/70 text-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs sm:text-base"
+        disabled={loading}
+        />
+      </div>
     <button
       type="submit"
-      className="bg-purple-600 text-white px-4 sm:px-6 py-2 rounded-lg font-semibold hover:bg-purple-700 transition-colors text-xs sm:text-base"
+      className="bg-purple-600 self-start text-white px-4 sm:px-6 py-2 rounded-lg font-semibold hover:bg-purple-700 transition-colors text-xs sm:text-base"
       disabled={loading}
     >
       Add
     </button>
   </form>
 
-  {/* Ideas grid */}
   <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 space-y-4 mt-6">
     {filtered.map((idea) => (
-      <motion.div
+      <div
         key={idea.id}
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
@@ -193,9 +195,9 @@ function Ideas() {
             <h2 className="text-xl font-semibold mb-2 break-words break-all whitespace-pre-wrap">
               {idea.title}
             </h2>
-            <p className="text-gray-700 dark:text-gray-300 break-words break-all whitespace-pre-wrap overflow-hidden">
+            <div className="text-gray-700 dark:text-gray-300 break-words break-all whitespace-pre-wrap overflow-hidden">
               {parseText(idea.description)}
-            </p>
+            </div>
             <p className="text-gray-500 text-sm mt-2">
               {new Date(idea.created_at).toLocaleString()}
             </p>
@@ -223,11 +225,10 @@ function Ideas() {
             </div>
           </div>
         )}
-      </motion.div>
+      </div>
     ))}
   </div>
 </main>
-      {/* Floating add button */}
       <FloatingButton onClick={handleAddIdea} icon="+" label="Add Idea" />
     </div>
   );

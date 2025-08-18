@@ -1,12 +1,10 @@
-// Login.jsx
-// Login and signup form with email/password and OAuth support
+// Login.jsx: Handles user login and signup, including OAuth.
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/useAuthStore';
 import { supabase } from '../components/supabaseClient';
 
 export default function LoginForm() {
-  // Form state
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [step, setStep] = useState('email');
@@ -16,10 +14,9 @@ export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
-  // Auth actions and state from global store
   const { signIn, signUp, signInWithOAuth, loading, setSession } = useAuthStore();
 
-  // Handle OAuth callback: exchange code for session
+  // Exchanges the code from an OAuth callback for a session.
   useEffect(() => {
     supabase.auth.exchangeCodeForSession().then(({ data, error }) => {
       if (data?.session) {
@@ -30,7 +27,7 @@ export default function LoginForm() {
     });
   }, []);
 
-  // Handle email/password login
+  // Logs in a user with email and password.
   const handleLogin = async () => {
     setError('');
     try {
@@ -41,7 +38,7 @@ export default function LoginForm() {
     }
   };
 
-  // Handle email/password signup
+  // Signs up a new user.
   const handleSignup = async () => {
     setError('');
     try {
@@ -52,7 +49,7 @@ export default function LoginForm() {
     }
   };
 
-  // Handle OAuth login (Google/Github)
+  // Logs in a user with Google or Github.
   const handleOAuth = async (provider) => {
     setError('');
     try {
@@ -70,13 +67,11 @@ export default function LoginForm() {
           <h1 className="text-3xl sm:text-5xl font-bold tracking-tight" style={{ fontFamily: 'var(--font-secondary)' }}>NoteHole</h1>
           <div className="mt-6 sm:mt-10">
             <h2 className="text-gray-800 text-lg sm:text-2xl font-bold sm:text-3xl">
-              {/* Switch heading based on auth mode */}
               {authMode === 'login' ? 'Log in to your account' : 'Create a new account'}
             </h2>
           </div>
         </div>
 
-        {/* Email input */}
         <div>
           <label className="font-medium text-sm sm:text-base">Email</label>
           <input
@@ -87,7 +82,6 @@ export default function LoginForm() {
             className="w-full mt-2 px-2 sm:px-3 py-2 text-gray-500 bg-transparent outline-none border focus:border-indigo-600 shadow-sm rounded-lg text-sm sm:text-base"
           />
         </div>
-        {/* Password input with show/hide toggle */}
         <div>
           <label className="font-medium text-sm sm:text-base">Password</label>
           <div className="relative">
@@ -103,12 +97,10 @@ export default function LoginForm() {
               onClick={() => setShowPassword(!showPassword)}
               className="btn btn-ghost btn-sm absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2"
             >
-              {/* Toggle password visibility icon */}
               {showPassword ? '\ud83d\ude48' : '\ud83d\udc41\ufe0f'}
             </button>
           </div>
         </div>
-        {/* Submit button for login/signup */}
         <button
           onClick={authMode === 'login' ? handleLogin : handleSignup}
           disabled={loading}
@@ -119,7 +111,6 @@ export default function LoginForm() {
   {/* Error message */}
   {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
-        {/* Switch between login and signup */}
         <p className="text-xs sm:text-sm text-center text-gray-500">
           {authMode === 'login' ? "Don't have an account?" : 'Already have an account?'}
           <button
@@ -134,13 +125,11 @@ export default function LoginForm() {
           </button>
         </p>
 
-        {/* OAuth divider */}
         <div className="relative">
           <span className="block w-full h-px bg-gray-300"></span>
           <p className="inline-block w-fit text-xs sm:text-sm dark:bg-black bg-white px-2 absolute -top-2 inset-x-0 mx-auto">Or continue with</p>
         </div>
 
-        {/* OAuth buttons */}
         <div className="space-y-4 text-xs sm:text-sm font-medium">
           <button
             onClick={() => handleOAuth('google')}

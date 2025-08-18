@@ -6,13 +6,11 @@ import useAuthStore from '../store/useAuthStore';
 import useSearchStore from '../store/useSearchStore';
 import useTasksStore from '../store/useTasksStore';
 import Fuse from 'fuse.js';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Info, Pencil, Trash2 } from 'lucide-react';
 import { setPageSEO } from '../utils/seo.js';
 
 function Tasks() {
-  // All hooks at the top
-  const { user, loading: authLoading, e2eeKey } = useAuthStore();
-  const userId = user?.id;
+  const { user, e2eeKey } = useAuthStore();
   const { tasks, loading, hydrated, fetchTasks, addTask, editTask, toggleTask, deleteTask } = useTasksStore();
   const [newTask, setNewTask] = useState('');
   const [filter, setFilter] = useState('all');
@@ -39,28 +37,28 @@ function Tasks() {
 
   
 
-  // Add a new task
+  // Adds a new task.
   const handleAddTask = async () => {
     if (!newTask.trim()) return;
     await addTask(newTask);
     setNewTask('');
   };
 
-  // Save edits to a task
+  // Saves an edited task.
   const handleSaveEdit = async (id) => {
     await editTask(id, editText);
     setEditingId(null);
     setEditText('');
   };
 
-  // Focus edit input when editing
+  // Focuses the edit input when a task is being edited.
   useEffect(() => {
     if (editingId && editInputRef.current) {
       editInputRef.current.focus();
     }
   }, [editingId]);
 
-  // Set SEO for Tasks page
+  // SEO for the Tasks page.
   useEffect(() => {
     setPageSEO({
       title: 'Tasks – NoteHole',
@@ -68,7 +66,7 @@ function Tasks() {
       canonical: 'https://notehole.pages.dev/tasks'
     });
   }, []);
-  // Memoized Fuse instance for fuzzy search
+  // Fuzzy search with Fuse.js.
   const fuse = useMemo(() => {
     return new Fuse(tasks, {
       keys: ['name'],
@@ -76,13 +74,12 @@ function Tasks() {
     });
   }, [tasks]);
   
-  // Only render after all hooks
   if (!hydrated) {
     return <div className="text-center text-gray-500 mb-4">Loading...</div>;
   }
 
 
-  // Filtered tasks based on search and filter
+  // Filters tasks based on the search query and the current filter.
   const filtered =
     searchQuery.trim() === ''
       ? tasks.filter((t) => {
@@ -102,36 +99,43 @@ function Tasks() {
   return (
     <div className="min-h-screen text-black dark:text-white flex flex-col text-xs sm:text-base">
       <h1 className="text-4xl font-bold mb-6">Task Manager</h1>
-      {/* Show loading or saving state */}
       {loading && <div className="text-center text-gray-500 mb-4">Saving...</div>}
-      {/* New task input */}
       <form
         onSubmit={e => { e.preventDefault(); handleAddTask(); }}
         className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-6 sm:mb-8"
       >
-        <input
-          type="text"
-          placeholder="New task..."
-          value={newTask}
-          onChange={(e) => setNewTask(e.target.value)}
-          onKeyDown={(e) => {
-          if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            handleAddTask();
-          }
-        }}
-          className="flex-1 px-2 sm:px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-gray-900/70 text-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs sm:text-base"
-          required
-        />
+        <div className="flex flex-col-reverse w-full gap-2 mb-2">
+          <label className="flex sm:items-center text-xs gap-1" htmlFor="task">
+            <Info className="w-3 h-3 pt-0.5 sm:pt-0"/>            
+            <span className="text-wrap">
+              You can use Markdown for formatting (<em>italic</em>, <strong>bold</strong>, <code className='bg-gray-800 px-1 py-0.5 rounded-md'>code</code>)
+            </span>
+          </label>
+          <input
+            type="text"
+            name="task"
+            id="task"
+            placeholder="New task..."
+            value={newTask}
+            onChange={(e) => setNewTask(e.target.value)}
+            onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              handleAddTask();
+            }
+          }}
+            className="flex-1 px-2 sm:px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-gray-900/70 text-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs sm:text-base"
+            required
+          />
+        </div>
         <button
           type="submit"
-          className="bg-purple-600 text-white px-4 sm:px-6 py-2 rounded-lg font-semibold hover:bg-purple-700 transition-colors text-xs sm:text-base"
+          className="bg-purple-600 self-start text-white px-4 sm:px-6 py-2 rounded-lg font-semibold hover:bg-purple-700 transition-colors text-xs sm:text-base"
           disabled={loading}
         >
           Add
         </button>
       </form>
-      {/* Filter buttons */}
       <div className="my-6 flex gap-4">
         {['all', 'pending', 'completed'].map((type) => (
           <button
@@ -148,10 +152,9 @@ function Tasks() {
           </button>
         ))}
       </div>
-      {/* Task list */}
       <ul className="space-y-2 sm:space-y-4">
         {filtered.map((task) => (
-          <motion.li
+          <li
             key={task.id}
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -201,13 +204,13 @@ function Tasks() {
                     className="h-5 w-5 text-purple-600"
                     disabled={loading}
                   />
-                  <span
+                  <div
                     className={`text-base ${
                       task.is_done ? 'line-through text-gray-500' : ''
                     }`}
                   >
                     {parseText(task.name)}
-                  </span>
+                  </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-xs text-gray-400">
@@ -235,10 +238,9 @@ function Tasks() {
                 </div>
               </>
             )}
-          </motion.li>
+          </li>
         ))}
       </ul>
-      {/* Floating add button */}
       <FloatingButton onClick={handleAddTask} icon="+" label="Add Task" />
     </div>
   );

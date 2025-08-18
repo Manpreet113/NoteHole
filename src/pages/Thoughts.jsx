@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Info, Pencil, Trash2 } from 'lucide-react';
 import { parseText } from '../utils/parseText';
 import useSearchStore from '../store/useSearchStore';
 import useAuthStore from '../store/useAuthStore';
@@ -10,9 +10,7 @@ import Fuse from 'fuse.js';
 import { setPageSEO } from '../utils/seo.js';
 
 function Thoughts() {
-  // All hooks at the top
-  const { user, loading: authLoading, e2eeKey } = useAuthStore();
-  const userId = user?.id;
+  const { user, e2eeKey } = useAuthStore();
   const { thoughts, loading, hydrated, fetchThoughts, addThought, editThought, deleteThought } = useThoughtsStore();
   const [newThought, setNewThought] = useState('');
   const [editingId, setEditingId] = useState(null);
@@ -37,7 +35,7 @@ function Thoughts() {
     }
   }, [editingId]);
 
-  // Set SEO for Thoughts page
+  // SEO for the Thoughts page.
   useEffect(() => {
     setPageSEO({
       title: 'Thoughts – NoteHole',
@@ -46,7 +44,7 @@ function Thoughts() {
     });
   }, []);
 
-  // Memoized Fuse instance for fuzzy search
+  // Fuzzy search with Fuse.js.
   const fuse = useMemo(() => {
     return new Fuse(thoughts, {
       keys: ['thought'],
@@ -54,26 +52,25 @@ function Thoughts() {
     });
   }, [thoughts]);
 
-  // Only render after all hooks
   if (!hydrated) {
     return <div className="text-center text-gray-500 mb-4">Loading...</div>;
   }
 
-  // Add a new thought
+  // Adds a new thought.
   const handleAddThought = async () => {
     if (!newThought.trim()) return;
     await addThought(newThought);
     setNewThought('');
   };
 
-  // Save edits to a thought
+  // Saves an edited thought.
   const handleSaveEdit = async (id) => {
     await editThought(id, editText);
     setEditingId(null);
     setEditText('');
   };
 
-  // Filtered thoughts based on search query
+  // Filters thoughts based on the search query.
   const filtered =
     searchQuery.trim() === ''
       ? thoughts
@@ -82,33 +79,40 @@ function Thoughts() {
   return (
     <div className="min-h-screen text-black dark:text-white flex flex-col text-xs sm:text-base">
       <h1 className="text-4xl font-bold mb-6">Thoughts Dump Zone</h1>
-      {/* Show loading or saving state */}
       {loading && <div className="text-center text-gray-500 mb-4">Saving...</div>}
-      {/* New thought input */}
       <form
         onSubmit={e => { e.preventDefault(); handleAddThought(); }}
         className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-6 sm:mb-8"
       >
-        <input
-          type="text"
-          placeholder="New thought..."
-          value={newThought}
-          onChange={e => setNewThought(e.target.value)}
-          className="flex-1 px-2 sm:px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-gray-900/70 text-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs sm:text-base"
-          required
-        />
+        <div className="flex flex-col-reverse w-full gap-2 mb-2">
+          <label className="flex sm:items-center text-xs gap-1" htmlFor="thought">
+            <Info className="w-3 h-3 pt-0.5 sm:pt-0"/>            
+            <span className="text-wrap">
+              You can use Markdown for formatting (<em>italic</em>, <strong>bold</strong>, <code className="bg-gray-800 px-1 py-0.5 rounded-md">code</code>)
+            </span>
+          </label>
+          <input
+            id="thought"
+            name="thought"
+            type="text"
+            placeholder="New thought..."
+            value={newThought}
+            onChange={e => setNewThought(e.target.value)}
+            className="flex-1 px-2 sm:px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-gray-900/70 text-black dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs sm:text-base"
+            required
+          />
+        </div>
         <button
           type="submit"
-          className="bg-purple-600 text-white px-4 sm:px-6 py-2 rounded-lg font-semibold hover:bg-purple-700 transition-colors text-xs sm:text-base"
+          className="bg-purple-600 self-start text-white px-4 sm:px-6 py-2 rounded-lg font-semibold hover:bg-purple-700 transition-colors text-xs sm:text-base"
           disabled={loading}
         >
           Add
         </button>
       </form>
-      {/* Thoughts list */}
       <ul className="space-y-2 sm:space-y-4">
         {filtered.map((thought) => (
-          <motion.li
+          <li
             key={thought.id}
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -118,7 +122,6 @@ function Thoughts() {
           >
             {editingId === thought.id ? (
               <div className="flex w-full space-x-2">
-                {/* Edit input for thought */}
                 <input
                   ref={editInputRef}
                   type="text"
@@ -150,15 +153,13 @@ function Thoughts() {
               </div>
             ) : (
               <>
-                {/* Render parsed thought text with links and timestamp */}
-                <span>
-                  {parseText(thought.thought)}{' '}
+                <div>
+                  {parseText(thought.thought)}
                   <span className="text-gray-400 text-sm">
                     ({new Date(thought.created_at).toLocaleString()})
                   </span>
-                </span>
+                </div>
                 <div className="space-x-2 flex items-center">
-                  {/* Edit button */}
                   <button
                     onClick={() => {
                       setEditingId(thought.id);
@@ -170,7 +171,6 @@ function Thoughts() {
                   >
                     <Pencil size={18} />
                   </button>
-                  {/* Delete button */}
                   <button
                     onClick={() => deleteThought(thought.id)}
                     className="btn btn-ghost btn-sm text-red-400 hover:text-red-600"
@@ -182,10 +182,9 @@ function Thoughts() {
                 </div>
               </>
             )}
-          </motion.li>
+          </li>
         ))}
       </ul>
-      {/* Floating add button */}
       <FloatingButton onClick={handleAddThought} label="Add Thought" icon="+" />
     </div>
   );
