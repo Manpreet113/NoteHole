@@ -77,7 +77,7 @@ export function parseText(text, data = null) {
           );
         }
       }
-      return <a {...props} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline break-all" />;
+      return <a {...props} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline" />;
     },
     p: ({ node, ...props }) => <p className="mb-4" {...props} />,
     h1: ({ node, ...props }) => <h1 className="text-2xl font-bold mb-4" {...props} />,

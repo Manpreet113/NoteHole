@@ -192,10 +192,10 @@ function Ideas() {
           </div>
         ) : (
           <div onClick={(e) => e.stopPropagation()}>
-            <h2 className="text-xl font-semibold mb-2 break-words break-all whitespace-pre-wrap">
+            <h2 className="text-xl font-semibold mb-2 break-words whitespace-pre-wrap">
               {idea.title}
             </h2>
-            <div className="text-gray-700 dark:text-gray-300 break-words break-all whitespace-pre-wrap overflow-hidden">
+            <div className="text-gray-700 dark:text-gray-300 break-words whitespace-pre-wrap overflow-hidden">
               {parseText(idea.description)}
             </div>
             <p className="text-gray-500 text-sm mt-2">
